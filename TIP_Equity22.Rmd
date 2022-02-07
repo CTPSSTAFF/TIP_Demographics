@@ -15,8 +15,8 @@ library(dplyr)
 library(tidycensus)
 library(tidyverse)
 library(stringr)
-library(hash)
 library(ggplot2)
+library(readr)
 ```
 3. Standard Error Function
 ```{r}
@@ -75,12 +75,15 @@ lt_2x_pov_moe <- c("c17002_001m","c17002_008m")
 acs_pop16p <- c("b23001_001e")
 acs_workers16p <- c("b08301_001e")  
 acs_workers16p_shr <- c("b23001_001e","b08301_001e")
+acs_pop75p <- c("B01001_023E","B01001_024E","B01001_025E","B01001_047E","B01001_048E","B01001_049E")
+acs_pop18u <- c("B01001_001E","B01001_003E","B01001_004E","B01001_005E","B01001_006E","B01001_027E","B01001_028E","B01001_029E","B01001_030E")
+
 
 #all acs fields
 acs_fields <- c(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
                acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
                pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
-               acs_workers16p_shr)
+               acs_workers16p_shr,acs_pop75p,acs_pop18u)
   
 ```
 
@@ -96,7 +99,7 @@ ACS
 acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = 2019, state = "MA", output = 'wide')
 # download tract geography and demographic data
 acstrts <- get_acs(geography = 'tract', variables = toupper(acs_fields), year = 2019, state = "MA", output = 'wide')
-# download block geography to block group and block to tract data
+
 ```
 
 Calculate counts for Census - total pop and minority pop 
@@ -154,25 +157,16 @@ acsbgs$acs_lep_pop <- (acsbgs$B16004_001E-acsbgs$B16004_003E-acsbgs$B16004_005E-
 
 
 ####ACS AGE AND HH#####
-acsbgs$acs_pop16p <- acsbgs$B23001_001E
-
-acsbgs$acs_workers16p <- acsbgs$B08301_001E
 
 acsbgs$bg_pop75p <- (acsbgs$B01001_023E+acsbgs$B01001_024E+acsbgs$B01001_025E+acsbgs$B01001_047E+acsbgs$B01001_048E+acsbgs$B01001_049E)
 
-dict_cenTab$Pop18u_Table$bg_pop18u <- (acsbgs$B01001_003E+acsbgs$B01001_004E+acsbgs$B01001_005E+acsbgs$B01001_006E+
+acsbgs$bg_pop18u <- (acsbgs$B01001_003E+acsbgs$B01001_004E+acsbgs$B01001_005E+acsbgs$B01001_006E+
                                           acsbgs$B01001_027E+acsbgs$B01001_028E+acsbgs$B01001_029E+acsbgs$B01001_030E)
 
-acsbgs$bg_pop5p <- acsbgs$B01001_001E - acsbgs$B01001_003E - acsbgs$B01001_027E
+acsbgs$bg_totpop <- acsbgs$B01001_001E
 
-acsbgs$bg_hh <- acsbgs$B11008_001E
 
-acsbgs$bg_pop16p <- (acsbgs$B01001_001E-(acsbgs$B01001_003E+acsbgs$B01001_004E+
-                                         acsbgs$B01001_005E+(acsbgs$B01001_006E/3)+
-                                          acsbgs$B01001_027E+acsbgs$B01001_028E+
-                                           acsbgs$B01001_029E+(acsbgs$B01001_030E/3)
-                                          )) #making the bold assumption that 1/3 15-17 year olds are 15. 
-                                            #previously done with Decennial Census - switch to this when data available
+
 
 ```
 
@@ -191,13 +185,150 @@ acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B1
 
 acstrts$acs_sr_disab_pop <- (acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_035E + acstrts$B18101_038E)
 
+
+acstrts$acs_pop16p <- acstrts$B23001_001E
+
+acstrts$acs_workers16p <- acstrts$B08301_001E
+
 ```
 
+Import the TIP data
+```{r}
+#tip projects with three different geography types
+tip_bg_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_acs19.csv")
+tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
+tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
 
+```
+
+Join TIP data to demographic data (Block Groups and Tracts)
 ```{r}
 
+tip_bg_acs <- merge(tip_bg_acs19 %>% select(geoid, area_fraction,tip_id), acsbgs, by.x ='geoid', by.y ='GEOID')
+tip_bg_acs[is.na(tip_bg_acs)] <- 0
 
+tip_tract_acs <- merge(tip_tract_acs19 %>% select(geoid, area_fraction,tip_id),acstrts, by.x ='geoid', by.y ='GEOID')
+tip_tract_acs[is.na(tip_tract_acs)] <- 0
 
+tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
+tip_bg_cen[is.na(tip_bg_cen)] <- 0
 
 ```
+
+
+Apply Area Fraction to BGs and Tracts 
+```{r}
+#2020 Census
+tip_bg_cen$TotalPop_AF<- tip_bg_cen$TotalPop*tip_bg_cen$area_fraction
+tip_bg_cen$MinPop_AF<- tip_bg_cen$MinPop*tip_bg_cen$area_fraction
+
+#2019 ACS - BGs
+#POV & 2x POV level
+tip_bg_acs$pov_stat_det_est_AF <- tip_bg_acs$pov_stat_det_est*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_est_AF <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_moe_AF <- tip_bg_acs$lt_2x_pov_moe*tip_bg_acs$area_fraction
+
+
+####HOUSEHOLDS - 0VEH AND LOWINC####
+tip_bg_acs$acs_hh_AF <- tip_bg_acs$acs_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_0veh_hh_AF <- tip_bg_acs$acs_0veh_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_0veh_hh_shr_AF <- tip_bg_acs$acs_0veh_hh_shr*tip_bg_acs$area_fraction
+tip_bg_acs$acs_tot_hh_AF <- tip_bg_acs$acs_tot_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_low_inc_hh_AF <- tip_bg_acs$acs_low_inc_hh*tip_bg_acs$area_fraction
+
+
+####LEP####
+tip_bg_acs$acs_pop_5p_AF <- tip_bg_acs$acs_pop_5p*tip_bg_acs$area_fraction
+tip_bg_acs$acs_lep_pop_AF <- tip_bg_acs$acs_lep_pop*tip_bg_acs$area_fraction
+
+####ACS AGE AND HH#####
+tip_bg_acs$bg_pop75p_AF <- tip_bg_acs$bg_pop75p*tip_bg_acs$area_fraction
+tip_bg_acs$bg_pop18u_AF <- tip_bg_acs$bg_pop18u*tip_bg_acs$area_fraction
+tip_bg_acs$bg_totpop_AF <- tip_bg_acs$bg_totpop*tip_bg_acs$area_fraction
+
+
+#2019 ACS - Tracts
+tip_tract_acs$acs_noninst_pop_AF <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_sr_noninst_pop_AF <- tip_tract_acs$acs_sr_noninst_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_disab_pop_AF <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_sr_disab_pop_AF <- tip_tract_acs$acs_sr_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_pop16p_AF <- tip_tract_acs$acs_pop16p*tip_tract_acs$area_fraction
+tip_tract_acs$acs_workers16p_AF <- tip_tract_acs$acs_workers16p*tip_tract_acs$area_fraction
+
+```
+
+
+Sum by Project
+```{r}
+buf_bg_cen <- tip_bg_cen %>% group_by(tip_id) %>% summarise(
+  TotalPop = sum(TotalPop_AF),
+  MinPop = sum(MinPop_AF)
+)
+
+
+buf_bg_acs <- tip_bg_acs %>% group_by(tip_id) %>% summarise(
+  pov_stat_det_est = sum(pov_stat_det_est_AF),
+  lt_2x_pov_est = sum(lt_2x_pov_est_AF),
+  lt_2x_pov_moe = sum(lt_2x_pov_moe_AF),
+  acs_hh = sum(acs_hh_AF),
+  acs_0veh_hh = sum(acs_0veh_hh_AF),
+  acs_0veh_hh_shr = sum(acs_0veh_hh_shr_AF),
+  acs_tot_hh = sum(acs_tot_hh_AF),
+  acs_low_inc_hh = sum(acs_low_inc_hh_AF),
+  acs_pop_5p = sum(acs_pop_5p_AF),
+  acs_lep_pop = sum(acs_lep_pop_AF),
+  bg_pop75p = sum(bg_pop75p_AF),
+  bg_pop18u = sum(bg_pop18u_AF),
+  bg_totpop = sum(bg_totpop_AF)
+)
+
+buf_tract_acs <- tip_tract_acs %>% group_by(tip_id) %>% summarise(
+  acs_noninst_pop = sum(acs_noninst_pop_AF),
+  acs_sr_noninst_pop = sum(acs_sr_noninst_pop_AF),
+  acs_disab_pop = sum(acs_disab_pop_AF),
+  acs_sr_disab_pop = sum(acs_sr_disab_pop_AF),
+  acs_pop16p = sum(acs_pop16p_AF),
+  acs_workers16p = sum(acs_workers16p_AF)
+)
+
+```
+
+
+Calculate Percentages
+```{r}
+
+buf_bg_cen$MinPerc <- round(buf_bg_cen$MinPop/buf_bg_cen$TotalPop,2)
+
+buf_bg_acs$lt_2x_pov_perc <- round(buf_bg_acs$lt_2x_pov_est / buf_bg_acs$pov_stat_det_est,2)
+
+buf_bg_acs$hh_0veh_perc <- round(buf_bg_acs$acs_0veh_hh / buf_bg_acs$acs_hh,2)
+buf_bg_acs$low_inc_hh_perc <- round(buf_bg_acs$acs_low_inc_hh / buf_bg_acs$acs_tot_hh,2)
+buf_bg_acs$lep_perc <- round(buf_bg_acs$acs_lep_pop / buf_bg_acs$acs_pop_5p,2)
+buf_bg_acs$p75_perc <- round(buf_bg_acs$bg_pop75p / buf_bg_acs$bg_totpop,2)
+buf_bg_acs$u18_perc <- round(buf_bg_acs$bg_pop18u / buf_bg_acs$bg_totpop,2)
+
+buf_tract_acs$disab_perc <- round(buf_tract_acs$acs_disab_pop / buf_tract_acs$acs_noninst_pop,2)
+buf_tract_acs$sr_disab_perc <- round(buf_tract_acs$acs_sr_disab_pop / buf_tract_acs$acs_sr_noninst_pop,2)
+buf_tract_acs$workers16p_perc <- round(buf_tract_acs$acs_workers16p / buf_tract_acs$acs_pop16p,2)
+
+```
+
+Export file
+```{r}
+buf_bg <- merge(buf_bg_acs, buf_bg_cen, by="tip_id")
+all_vars <- merge(buf_bg, buf_tract_acs, by="tip_id")
+final <- all_vars %>% select(tip_id,MinPerc,lt_2x_pov_perc,hh_0veh_perc,low_inc_hh_perc,
+                             lep_perc,u18_perc,p75_perc, disab_perc,workers16p_perc)
+
+write.csv(final, "G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_demographics_23_Feb2.csv")
+
+```
+
+
+
+
+
+
+
+
 
