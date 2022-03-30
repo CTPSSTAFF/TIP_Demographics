@@ -1,7 +1,7 @@
 ---
-title: "TIP_Equity22"
-author: "Margaret Atkinson"
-date: "1/30/2022"
+title: "TIP_Equity22 (2020 ACS Update)"
+author: "Margaret Atkinson | Steven Andrews"
+date: "2022-01-30 | Updtate: 2022-03-29"
 output: html_document
 ---
 Set up: 
@@ -54,9 +54,9 @@ readRenviron("~/.Renviron")
 # You can check it with:
 Sys.getenv("CENSUS_API_KEY")
 ```
-Prepare ACS 2019 Field Categories
+Prepare ACS 2020 Field Categories
 ```{r}
-# ACS 2019 Fields
+# ACS 2020 Fields
 acs_noninst_pop <- c("b18101_001e")
 acs_sr_noninst_pop <- c("b18101_015e","b18101_018e","b18101_034e","b18101_037e") 
 acs_disabled_pop <- c("b18101_004e","b18101_007e","b18101_010e","b18101_013e","b18101_016e","b18101_019e",
@@ -95,10 +95,12 @@ bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P1_003
 ```
 ACS
 ```{r}
+acs_yr <-  2020
+
 # download block group geography and demographic data
-acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = 2019, state = "MA", output = 'wide')
+acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
 # download tract geography and demographic data
-acstrts <- get_acs(geography = 'tract', variables = toupper(acs_fields), year = 2019, state = "MA", output = 'wide')
+acstrts <- get_acs(geography = 'tract', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
 
 ```
 
@@ -141,6 +143,9 @@ acsbgs$acs_0veh_hh_shr <- round(acsbgs$acs_0veh_hh/acsbgs$acs_hh,5)
 
 acsbgs$acs_tot_hh <- acsbgs$B19001_001E
 
+# Note: 392/5000 is most likely the share of the households in that last category
+# that are low-income. This would be calculated elsewhere and reported here.
+# TODO: Check whether we can calculate the 392/5000 at runtime.
 acsbgs$acs_low_inc_hh <- round(acsbgs$B19001_002E + acsbgs$B19001_003E + acsbgs$B19001_004E + acsbgs$B19001_005E +
                                acsbgs$B19001_006E + acsbgs$B19001_007E + acsbgs$B19001_008E + acsbgs$B19001_009E +
                                (392/5000)*acsbgs$B19001_010E,0)
@@ -222,7 +227,7 @@ Apply Area Fraction to BGs and Tracts
 tip_bg_cen$TotalPop_AF<- tip_bg_cen$TotalPop*tip_bg_cen$area_fraction
 tip_bg_cen$MinPop_AF<- tip_bg_cen$MinPop*tip_bg_cen$area_fraction
 
-#2019 ACS - BGs
+#2020 ACS - BGs
 #POV & 2x POV level
 tip_bg_acs$pov_stat_det_est_AF <- tip_bg_acs$pov_stat_det_est*tip_bg_acs$area_fraction
 tip_bg_acs$lt_2x_pov_est_AF <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
@@ -247,7 +252,7 @@ tip_bg_acs$bg_pop18u_AF <- tip_bg_acs$bg_pop18u*tip_bg_acs$area_fraction
 tip_bg_acs$bg_totpop_AF <- tip_bg_acs$bg_totpop*tip_bg_acs$area_fraction
 
 
-#2019 ACS - Tracts
+#2020 ACS - Tracts
 tip_tract_acs$acs_noninst_pop_AF <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
 tip_tract_acs$acs_sr_noninst_pop_AF <- tip_tract_acs$acs_sr_noninst_pop*tip_tract_acs$area_fraction
 tip_tract_acs$acs_disab_pop_AF <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
@@ -320,7 +325,7 @@ all_vars <- merge(buf_bg, buf_tract_acs, by="tip_id")
 final <- all_vars %>% select(tip_id,MinPerc,lt_2x_pov_perc,hh_0veh_perc,low_inc_hh_perc,
                              lep_perc,u18_perc,p75_perc, disab_perc,workers16p_perc)
 
-write.csv(final, "G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_demographics_23_Feb2.csv")
+write.csv(final, "./output/tip_demographics_2020ACS_2020Cen.csv")
 
 ```
 
