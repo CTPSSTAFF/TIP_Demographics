@@ -52,7 +52,7 @@ std_err_proportion <- function(output, numerator, denominator, std_err_numerator
 # First time, reload your environment so you can use the key without restarting R.
 readRenviron("~/.Renviron")
 # You can check it with:
-Sys.getenv("CENSUS_API_KEY")
+# Sys.getenv("CENSUS_API_KEY")
 ```
 Prepare ACS 2020 Field Categories
 ```{r}
@@ -200,9 +200,31 @@ acstrts$acs_workers16p <- acstrts$B08301_001E
 Import the TIP data
 ```{r}
 #tip projects with three different geography types
-tip_bg_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_acs19.csv")
-tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
-tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
+# tip_bg_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_acs19.csv")
+# tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
+# tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
+
+tip_bg_acs19 <- read_csv("./data/tip_bg_acs19.csv") %>% mutate(geoid = as.character(geoid))
+tip_bg_cen20 <- read_csv("./data/tip_bg_cen20.csv") %>% mutate(geoid_20 = as.character(geoid_20))
+
+
+#rebuild the GEOIDs to match
+tip_bg_acs19 <- tip_bg_acs19 %>% 
+  mutate(
+    geoid_old = geoid, # keep the original one
+    # geoid = paste0(
+    # str_pad(state, 2, pad = 0),
+    # str_pad(county, 3, pad = 0),
+    # str_pad(tract10, 6, pad = 0),
+    # str_pad(block10, 4, pad = 0))
+  )
+
+
+# clean up!
+rm(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
+               acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
+               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
+               acs_workers16p_shr,acs_pop75p,acs_pop18u)
 
 ```
 
@@ -215,7 +237,7 @@ tip_bg_acs[is.na(tip_bg_acs)] <- 0
 tip_tract_acs <- merge(tip_tract_acs19 %>% select(geoid, area_fraction,tip_id),acstrts, by.x ='geoid', by.y ='GEOID')
 tip_tract_acs[is.na(tip_tract_acs)] <- 0
 
-tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
+tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20 = geoid_20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
 tip_bg_cen[is.na(tip_bg_cen)] <- 0
 
 ```
