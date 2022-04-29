@@ -45,8 +45,3 @@ tip_proj_areas_wd <- tip_proj_areas_jn %>%
 
 write_csv(tip_proj_areas_wd, "./output/tip_proj_hh_pop_cen20.csv")
 
-
-
-
-
-
