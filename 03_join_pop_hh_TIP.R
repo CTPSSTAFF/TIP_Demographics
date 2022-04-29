@@ -3,7 +3,7 @@ library(tidyverse)
 # Join the demographic percentages to the hh/pop values. 
 # Let's start fresh and grab the two fields.
 # 
-tip_pcts <- read_csv("./output/tip_demographics_2019ACS_2020Cen.csv")
+tip_pcts <- read_csv("./output/tip_demog_pct_2019ACS_2020Cen.csv")
 tip_vals <- read_csv("./output/tip_proj_hh_pop_2020Cen.csv")
 
 tip_join <- full_join(tip_pcts, tip_vals, by = "tip_id")
