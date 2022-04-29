@@ -8,12 +8,12 @@ library(tidycensus)
 
 cen_vars <- load_variables(year = 2020, dataset = "pl")
 
-cen_labs <- cen_vars %>% filter(name %in% c("H1_001N", "P1_001N", "P3_001N"))
+cen_labs <- cen_vars %>% filter(name %in% c("H1_002N", "P1_001N", "P3_001N"))
 
 # If we need "occupied housing" add H1_002N.
 MA_blkgrp <- get_decennial(geography = "block group",
                           state = "MA",
-                          variables = c("H1_001N", "P1_001N", "P3_001N"),
+                          variables = c("H1_002N", "P1_001N", "P3_001N"),
                           year = 2020)
 
 # Read in our TIP project intersections. This is based on 2020 census blocks (!!).
