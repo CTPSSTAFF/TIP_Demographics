@@ -348,7 +348,7 @@ all_vars <- merge(buf_bg, buf_tract_acs, by="tip_id")
 final <- all_vars %>% select(tip_id,MinPerc,lt_2x_pov_perc,hh_0veh_perc,low_inc_hh_perc,
                              lep_perc,u18_perc,p75_perc, disab_perc,workers16p_perc)
 
-write.csv(final, "./output/tip_demographics_2019ACS_2020Cen.csv")
+write.csv(final, "./output/tip_demog_pct_2019ACS_2020Cen.csv")
 
 ```
 
