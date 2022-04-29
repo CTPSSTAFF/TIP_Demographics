@@ -19,6 +19,7 @@ tip_join <- tip_join %>%
          p75_num = p75_perc *               P1_001N, # Total Population
          disab_num = disab_perc *           P1_001N, # Total Population
          workers16p_num = workers16p_perc * P3_001N  # Population 18+
-         )
+         ) %>% 
+  select(tip_id, H1_002N:P3_001N, min_perc:workers16p_num)
 
 write_csv(tip_join, "./output/tip_demog_pct_num_2019ACS_2020Cen.csv")
