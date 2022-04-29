@@ -8,12 +8,12 @@ library(tidycensus)
 
 cen_vars <- load_variables(year = 2020, dataset = "pl")
 
-cen_labs <- cen_vars %>% filter(name %in% c("H1_001N", "P1_001N"))
+cen_labs <- cen_vars %>% filter(name %in% c("H1_001N", "P1_001N", "P3_001N"))
 
 # If we need "occupied housing" add H1_002N.
 MA_blkgrp <- get_decennial(geography = "block group",
                           state = "MA",
-                          variables = c("H1_001N", "P1_001N"),
+                          variables = c("H1_001N", "P1_001N", "P3_001N"),
                           year = 2020)
 
 # Read in our TIP project intersections. This is based on 2020 census blocks (!!).
@@ -28,7 +28,8 @@ tip_proj_areas <- tip_proj_areas %>%
   mutate(geoid = as.character(geoid20)) %>% 
   select(geoid, tip_id, area_fraction) 
 
-# Join the two datasets. This should be two times as big as the original dataset
+# Join the two datasets. This should be X times as big as the original dataset where
+# X is the number of variables.
 # because we have two tables). 
 tip_proj_areas_jn <- left_join(tip_proj_areas, MA_blkgrp, by = c("geoid" = "GEOID"))
 
