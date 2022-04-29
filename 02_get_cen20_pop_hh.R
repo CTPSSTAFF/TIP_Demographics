@@ -44,5 +44,5 @@ tip_proj_areas_wd <- tip_proj_areas_jn %>%
   pivot_wider(names_from = variable,
               values_from = tot_val)
 
-write_csv(tip_proj_areas_wd, "./output/tip_proj_hh_pop_cen20.csv")
+write_csv(tip_proj_areas_wd, "./output/tip_proj_hh_pop_2020Cen.csv")
 
