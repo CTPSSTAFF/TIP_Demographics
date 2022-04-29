@@ -6,7 +6,7 @@ library(tidyverse)
 tip_pcts <- read_csv("./output/tip_demographics_2019ACS_2020Cen.csv")
 tip_vals <- read_csv("./output/tip_proj_hh_pop_2020Cen.csv")
 
-tip_join <- full_join(TIP_pcts, TIP_vals, by = "tip_id")
+tip_join <- full_join(tip_pcts, tip_vals, by = "tip_id")
 
 tip_join <- tip_join %>% 
   rename(min_perc = MinPerc) %>% 
@@ -21,4 +21,4 @@ tip_join <- tip_join %>%
          workers16p_num = workers16p_perc * P3_001N  # Population 18+
          )
 
-write_csv(tip_join, "./output/tip_pct_num_2019ACS_2020Cen.csv")
+write_csv(tip_join, "./output/tip_demog_pct_num_2019ACS_2020Cen.csv")
