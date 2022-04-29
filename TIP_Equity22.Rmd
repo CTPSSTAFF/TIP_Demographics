@@ -91,7 +91,7 @@ Download tables from tidycensus
 ```{r}
 # Grab Census 2020 geography, total population, and minority data
 # download block groups and minority data and total population data
-bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P1_003N'), year = 2020, sumfile = "pl", state = "MA", output = 'wide')
+bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P2_005N'), year = 2020, sumfile = "pl", state = "MA", output = 'wide')
 ```
 ACS
 ```{r}
@@ -110,7 +110,7 @@ Calculate counts for Census - total pop and minority pop
 #total population
 bg20$TotalPop <- bg20$P1_001N
 #minority population
-bg20$MinPop <- bg20$TotalPop - bg20$P1_003N
+bg20$MinPop <- bg20$TotalPop - bg20$P2_005N
 
 ```
 
