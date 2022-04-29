@@ -204,8 +204,9 @@ Import the TIP data
 # tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
 # tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
 
-tip_bg_acs19 <- read_csv("./data/tip_bg_acs19.csv") %>% mutate(geoid = as.character(geoid))
-tip_bg_cen20 <- read_csv("./data/tip_bg_cen20.csv") %>% mutate(geoid_20 = as.character(geoid_20))
+tip_bg_acs19 <- read_csv("./data/tip_bg_acs19.csv")
+tip_bg_cen20 <- read_csv("./data/tip_bg_cen20.csv")
+tip_tract_acs19 <- read_csv("./data/tip_tract_acs19.csv")
 
 
 #rebuild the GEOIDs to match
@@ -237,7 +238,7 @@ tip_bg_acs[is.na(tip_bg_acs)] <- 0
 tip_tract_acs <- merge(tip_tract_acs19 %>% select(geoid, area_fraction,tip_id),acstrts, by.x ='geoid', by.y ='GEOID')
 tip_tract_acs[is.na(tip_tract_acs)] <- 0
 
-tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20 = geoid_20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
+tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
 tip_bg_cen[is.na(tip_bg_cen)] <- 0
 
 ```
@@ -350,12 +351,5 @@ final <- all_vars %>% select(tip_id,MinPerc,lt_2x_pov_perc,hh_0veh_perc,low_inc_
 write.csv(final, "./output/tip_demographics_2020ACS_2020Cen.csv")
 
 ```
-
-
-
-
-
-
-
 
 
