@@ -1,0 +1,355 @@
+---
+title: "TIP_Equity22 (2020 ACS Update)"
+author: "Margaret Atkinson | Steven Andrews"
+date: "2022-01-30 | Updtate: 2022-03-29"
+output: html_document
+---
+Set up: 
+1. 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+2. Libraries
+```{r}
+library(dplyr)
+library(tidycensus)
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(readr)
+```
+3. Standard Error Function
+```{r}
+# standard error proportion fxn
+std_err_proportion <- function(output, numerator, denominator, std_err_numerator, std_err_denominator){
+  numerator <- as.numeric(numerator)
+  denominator <- as.numeric(denominator)
+  std_err_denominator <- as.numeric(std_err_denominator)
+  std_err_numerator <- as.numeric(std_err_numerator)
+  if(denominator == 0){
+    result <- 0
+  }else{
+    radicand <- (std_err_numerator^2) - ((numerator / denominator)^2) * (std_err_denominator^2)
+    if(radicand < 0){
+      radicand <- (std_err_numerator^2) + ((numerator / denominator)^2) * (std_err_denominator^2)
+    }
+    if(numerator == denominator){
+      result <- round(std_err_numerator / denominator, 5)
+    } else if(radicand == 0) {
+      result <- 0
+    } else{
+      result <- round((radicand ^0.5) / denominator, 5)
+    }
+    
+  }
+}
+#(written by Paul Reim)
+```
+4. Census API key set up
+```{r}
+# Census API key set up
+#census_api_key("e4bec76221ba04c7df76c7c580659bf1f54ed2c1", install = TRUE)
+# First time, reload your environment so you can use the key without restarting R.
+readRenviron("~/.Renviron")
+# You can check it with:
+# Sys.getenv("CENSUS_API_KEY")
+```
+Prepare ACS 2020 Field Categories
+```{r}
+# ACS 2020 Fields
+acs_noninst_pop <- c("b18101_001e")
+acs_sr_noninst_pop <- c("b18101_015e","b18101_018e","b18101_034e","b18101_037e") 
+acs_disabled_pop <- c("b18101_004e","b18101_007e","b18101_010e","b18101_013e","b18101_016e","b18101_019e",
+                      "b18101_023e","b18101_026e","b18101_029e","b18101_032e","b18101_035e","b18101_038e")
+acs_sr_disab_pop <- c("b18101_016e","b18101_019e","b18101_035e","b18101_038e")
+acs_hh <- c("b25044_001e")
+acs_0veh_hh <- c("b25044_003e","b25044_010e")
+acs_low_inc_hh <- c("b19001_001e","b19001_002e","b19001_003e","b19001_004e","b19001_005e","b19001_006e","b19001_007e","b19001_008e","b19001_009e","b19001_010e")
+acs_pop_5p <- c("b16004_001e")
+acs_lep_pop <- c("b16004_001e","b16004_003e","b16004_005e","b16004_010e","b16004_015e","b16004_020e","b16004_025e","b16004_027e","b16004_032e","b16004_037e",
+                 "b16004_042e","b16004_047e","b16004_049e","b16004_054e","b16004_059e","b16004_064e")
+pov_stat_det_est <- c("c17002_001e") 
+pov_stat_det_moe <- c("c17002_001m")
+lt_2x_pov_est <- c("c17002_001e","c17002_008e")
+lt_2x_pov_moe <- c("c17002_001m","c17002_008m")
+acs_pop16p <- c("b23001_001e")
+acs_workers16p <- c("b08301_001e")  
+acs_workers16p_shr <- c("b23001_001e","b08301_001e")
+acs_pop75p <- c("B01001_023E","B01001_024E","B01001_025E","B01001_047E","B01001_048E","B01001_049E")
+acs_pop18u <- c("B01001_001E","B01001_003E","B01001_004E","B01001_005E","B01001_006E","B01001_027E","B01001_028E","B01001_029E","B01001_030E")
+
+
+#all acs fields
+acs_fields <- c(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
+               acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
+               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
+               acs_workers16p_shr,acs_pop75p,acs_pop18u)
+  
+```
+
+Download tables from tidycensus
+```{r}
+# Grab Census 2020 geography, total population, and minority data
+# download block groups and minority data and total population data
+bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P2_005N'), year = 2020, sumfile = "pl", state = "MA", output = 'wide')
+```
+ACS
+```{r}
+acs_yr <- 2019
+
+# download block group geography and demographic data
+acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
+# download tract geography and demographic data
+acstrts <- get_acs(geography = 'tract', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
+
+```
+
+Calculate counts for Census - total pop and minority pop 
+
+```{r}
+#total population
+bg20$TotalPop <- bg20$P1_001N
+#minority population
+bg20$MinPop <- bg20$TotalPop - bg20$P2_005N
+
+```
+
+ACS - Block Groups
+``` {r, warning = FALSE} 
+#Pov_Stat_Det_Pop (Taken from ACS because only using % and not released from 2020 Census yet)
+####POV STAT DET & LT 2X POV####
+acsbgs$pov_stat_det_est <- acsbgs$C17002_001E
+acsbgs$pov_stat_det_moe <- acsbgs$C17002_001M
+
+acsbgs$lt_2x_pov_est <- acsbgs$C17002_001E - acsbgs$C17002_008E
+
+#std_err_sum (e.g. standard error of a sum or difference)
+#std_err_sum =  round(((stderr1^2)+(stderr2^2))*0.5,0)
+acsbgs$lt_2x_pov_moe <- round(((acsbgs$C17002_001M^2)+(acsbgs$C17002_008M^2))*0.5,0)
+
+acsbgs <- acsbgs %>% mutate(lt_2x_pov_shr_est = ifelse(pov_stat_det_est == 0, 0, round(lt_2x_pov_est/pov_stat_det_est, 5)))
+
+#std_err_proportion (e.g. standard error of a proportion)
+acsbgs$lt_2x_pov_shr_moe <- apply(acsbgs, 1, std_err_proportion,
+                                  numerator=acsbgs$lt_2x_pov_est,denominator=acsbgs$pov_stat_det_est,
+                                  std_err_numerator=acsbgs$lt_2x_pov_moe,std_err_denominator = acsbgs$pov_stat_det_moe)[,1]
+
+####HOUSEHOLDS - 0VEH AND LOWINC####
+acsbgs$acs_hh <- acsbgs$B25044_001E
+
+acsbgs$acs_0veh_hh <- acsbgs$B25044_003E + acsbgs$B25044_010E
+
+acsbgs$acs_0veh_hh_shr <- round(acsbgs$acs_0veh_hh/acsbgs$acs_hh,5)
+
+acsbgs$acs_tot_hh <- acsbgs$B19001_001E
+
+# Note: 392/5000 is most likely the share of the households in that last category
+# that are low-income. This would be calculated elsewhere and reported here.
+# TODO: Check whether we can calculate the 392/5000 at runtime.
+acsbgs$acs_low_inc_hh <- round(acsbgs$B19001_002E + acsbgs$B19001_003E + acsbgs$B19001_004E + acsbgs$B19001_005E +
+                               acsbgs$B19001_006E + acsbgs$B19001_007E + acsbgs$B19001_008E + acsbgs$B19001_009E +
+                               (392/5000)*acsbgs$B19001_010E,0)
+
+
+####LEP####
+acsbgs$acs_pop_5p <- acsbgs$B16004_001E
+
+acsbgs$acs_lep_pop <- (acsbgs$B16004_001E-acsbgs$B16004_003E-acsbgs$B16004_005E-acsbgs$B16004_010E-acsbgs$B16004_015E-
+                       acsbgs$B16004_020E-acsbgs$B16004_025E-acsbgs$B16004_027E-acsbgs$B16004_032E-acsbgs$B16004_037E-
+                       acsbgs$B16004_042E-acsbgs$B16004_047E-acsbgs$B16004_049E-acsbgs$B16004_054E-acsbgs$B16004_059E-
+                       acsbgs$B16004_064E) 
+
+
+
+####ACS AGE AND HH#####
+
+acsbgs$bg_pop75p <- (acsbgs$B01001_023E+acsbgs$B01001_024E+acsbgs$B01001_025E+acsbgs$B01001_047E+acsbgs$B01001_048E+acsbgs$B01001_049E)
+
+acsbgs$bg_pop18u <- (acsbgs$B01001_003E+acsbgs$B01001_004E+acsbgs$B01001_005E+acsbgs$B01001_006E+
+                                          acsbgs$B01001_027E+acsbgs$B01001_028E+acsbgs$B01001_029E+acsbgs$B01001_030E)
+
+acsbgs$bg_totpop <- acsbgs$B01001_001E
+
+
+
+
+```
+
+
+
+ACS - Tracts
+```{r}
+####DISABLED POP ACS####
+acstrts$acs_noninst_pop <- acstrts$B18101_001E
+
+acstrts$acs_sr_noninst_pop <- (acstrts$B18101_015E +acstrts$B18101_018E +acstrts$B18101_034E +acstrts$B18101_037E)
+
+acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B18101_010E + acstrts$B18101_013E +
+                         acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_023E + acstrts$B18101_026E +
+                         acstrts$B18101_029E + acstrts$B18101_032E + acstrts$B18101_035E + acstrts$B18101_038E)
+
+acstrts$acs_sr_disab_pop <- (acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_035E + acstrts$B18101_038E)
+
+
+acstrts$acs_pop16p <- acstrts$B23001_001E
+
+acstrts$acs_workers16p <- acstrts$B08301_001E
+
+```
+
+Import the TIP data
+```{r}
+#tip projects with three different geography types
+# tip_bg_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_acs19.csv")
+# tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
+# tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
+
+tip_bg_acs19 <- read_csv("./data/tip_bg_acs19.csv")
+tip_bg_cen20 <- read_csv("./data/tip_bg_cen20.csv")
+tip_tract_acs19 <- read_csv("./data/tip_tract_acs19.csv")
+
+
+#rebuild the GEOIDs to match
+tip_bg_acs19 <- tip_bg_acs19 %>% 
+  mutate(
+    geoid_old = geoid, # keep the original one
+    # geoid = paste0(
+    # str_pad(state, 2, pad = 0),
+    # str_pad(county, 3, pad = 0),
+    # str_pad(tract10, 6, pad = 0),
+    # str_pad(block10, 4, pad = 0))
+  )
+
+
+# clean up!
+rm(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
+               acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
+               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
+               acs_workers16p_shr,acs_pop75p,acs_pop18u)
+
+```
+
+Join TIP data to demographic data (Block Groups and Tracts)
+```{r}
+
+tip_bg_acs <- merge(tip_bg_acs19 %>% select(geoid, area_fraction,tip_id), acsbgs, by.x ='geoid', by.y ='GEOID')
+tip_bg_acs[is.na(tip_bg_acs)] <- 0
+
+tip_tract_acs <- merge(tip_tract_acs19 %>% select(geoid, area_fraction,tip_id),acstrts, by.x ='geoid', by.y ='GEOID')
+tip_tract_acs[is.na(tip_tract_acs)] <- 0
+
+tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid20, area_fraction,tip_id), bg20, by.x ='geoid20', by.y ='GEOID')
+tip_bg_cen[is.na(tip_bg_cen)] <- 0
+
+```
+
+
+Apply Area Fraction to BGs and Tracts 
+```{r}
+#2020 Census
+tip_bg_cen$TotalPop_AF<- tip_bg_cen$TotalPop*tip_bg_cen$area_fraction
+tip_bg_cen$MinPop_AF<- tip_bg_cen$MinPop*tip_bg_cen$area_fraction
+
+#2020 ACS - BGs
+#POV & 2x POV level
+tip_bg_acs$pov_stat_det_est_AF <- tip_bg_acs$pov_stat_det_est*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_est_AF <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_moe_AF <- tip_bg_acs$lt_2x_pov_moe*tip_bg_acs$area_fraction
+
+
+####HOUSEHOLDS - 0VEH AND LOWINC####
+tip_bg_acs$acs_hh_AF <- tip_bg_acs$acs_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_0veh_hh_AF <- tip_bg_acs$acs_0veh_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_0veh_hh_shr_AF <- tip_bg_acs$acs_0veh_hh_shr*tip_bg_acs$area_fraction
+tip_bg_acs$acs_tot_hh_AF <- tip_bg_acs$acs_tot_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_low_inc_hh_AF <- tip_bg_acs$acs_low_inc_hh*tip_bg_acs$area_fraction
+
+
+####LEP####
+tip_bg_acs$acs_pop_5p_AF <- tip_bg_acs$acs_pop_5p*tip_bg_acs$area_fraction
+tip_bg_acs$acs_lep_pop_AF <- tip_bg_acs$acs_lep_pop*tip_bg_acs$area_fraction
+
+####ACS AGE AND HH#####
+tip_bg_acs$bg_pop75p_AF <- tip_bg_acs$bg_pop75p*tip_bg_acs$area_fraction
+tip_bg_acs$bg_pop18u_AF <- tip_bg_acs$bg_pop18u*tip_bg_acs$area_fraction
+tip_bg_acs$bg_totpop_AF <- tip_bg_acs$bg_totpop*tip_bg_acs$area_fraction
+
+
+#2020 ACS - Tracts
+tip_tract_acs$acs_noninst_pop_AF <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_sr_noninst_pop_AF <- tip_tract_acs$acs_sr_noninst_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_disab_pop_AF <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_sr_disab_pop_AF <- tip_tract_acs$acs_sr_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_pop16p_AF <- tip_tract_acs$acs_pop16p*tip_tract_acs$area_fraction
+tip_tract_acs$acs_workers16p_AF <- tip_tract_acs$acs_workers16p*tip_tract_acs$area_fraction
+
+```
+
+
+Sum by Project
+```{r}
+buf_bg_cen <- tip_bg_cen %>% group_by(tip_id) %>% summarise(
+  TotalPop = sum(TotalPop_AF),
+  MinPop = sum(MinPop_AF)
+)
+
+
+buf_bg_acs <- tip_bg_acs %>% group_by(tip_id) %>% summarise(
+  pov_stat_det_est = sum(pov_stat_det_est_AF),
+  lt_2x_pov_est = sum(lt_2x_pov_est_AF),
+  lt_2x_pov_moe = sum(lt_2x_pov_moe_AF),
+  acs_hh = sum(acs_hh_AF),
+  acs_0veh_hh = sum(acs_0veh_hh_AF),
+  acs_0veh_hh_shr = sum(acs_0veh_hh_shr_AF),
+  acs_tot_hh = sum(acs_tot_hh_AF),
+  acs_low_inc_hh = sum(acs_low_inc_hh_AF),
+  acs_pop_5p = sum(acs_pop_5p_AF),
+  acs_lep_pop = sum(acs_lep_pop_AF),
+  bg_pop75p = sum(bg_pop75p_AF),
+  bg_pop18u = sum(bg_pop18u_AF),
+  bg_totpop = sum(bg_totpop_AF)
+)
+
+buf_tract_acs <- tip_tract_acs %>% group_by(tip_id) %>% summarise(
+  acs_noninst_pop = sum(acs_noninst_pop_AF),
+  acs_sr_noninst_pop = sum(acs_sr_noninst_pop_AF),
+  acs_disab_pop = sum(acs_disab_pop_AF),
+  acs_sr_disab_pop = sum(acs_sr_disab_pop_AF),
+  acs_pop16p = sum(acs_pop16p_AF),
+  acs_workers16p = sum(acs_workers16p_AF)
+)
+
+```
+
+
+Calculate Percentages
+```{r}
+
+buf_bg_cen$MinPerc <- round(buf_bg_cen$MinPop/buf_bg_cen$TotalPop,2)
+
+buf_bg_acs$lt_2x_pov_perc <- round(buf_bg_acs$lt_2x_pov_est / buf_bg_acs$pov_stat_det_est,2)
+
+buf_bg_acs$hh_0veh_perc <- round(buf_bg_acs$acs_0veh_hh / buf_bg_acs$acs_hh,2)
+buf_bg_acs$low_inc_hh_perc <- round(buf_bg_acs$acs_low_inc_hh / buf_bg_acs$acs_tot_hh,2)
+buf_bg_acs$lep_perc <- round(buf_bg_acs$acs_lep_pop / buf_bg_acs$acs_pop_5p,2)
+buf_bg_acs$p75_perc <- round(buf_bg_acs$bg_pop75p / buf_bg_acs$bg_totpop,2)
+buf_bg_acs$u18_perc <- round(buf_bg_acs$bg_pop18u / buf_bg_acs$bg_totpop,2)
+
+buf_tract_acs$disab_perc <- round(buf_tract_acs$acs_disab_pop / buf_tract_acs$acs_noninst_pop,2)
+buf_tract_acs$sr_disab_perc <- round(buf_tract_acs$acs_sr_disab_pop / buf_tract_acs$acs_sr_noninst_pop,2)
+buf_tract_acs$workers16p_perc <- round(buf_tract_acs$acs_workers16p / buf_tract_acs$acs_pop16p,2)
+
+```
+
+Export file
+```{r}
+buf_bg <- merge(buf_bg_acs, buf_bg_cen, by="tip_id")
+all_vars <- merge(buf_bg, buf_tract_acs, by="tip_id")
+final <- all_vars %>% select(tip_id,MinPerc,lt_2x_pov_perc,hh_0veh_perc,low_inc_hh_perc,
+                             lep_perc,u18_perc,p75_perc, disab_perc,workers16p_perc)
+
+write.csv(final, "./output/tip_demographics_2019ACS_2020Cen.csv")
+
+```
+
+
