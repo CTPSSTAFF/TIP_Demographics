@@ -122,7 +122,7 @@ bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P1_003
 ```
 ACS
 ```{r}
-acs_yr <- 2020
+acs_yr <- 2021
 
 # download block group geography and demographic data
 acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
