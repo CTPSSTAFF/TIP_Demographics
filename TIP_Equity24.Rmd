@@ -1,8 +1,8 @@
 ---
-title: "TIP_Equity23"
+title: "TIP_Equity24"
 author: "Margaret Atkinson"
 output: html_document
-updated_date: "2022-11-16"
+updated_date: "2023-01-26"
 updated_by: "Seth Strumwasser"
 ---
 
@@ -118,7 +118,7 @@ Download tables from tidycensus
 ```{r}
 # Grab Census 2020 geography, total population, and minority data
 # download block groups and minority data and total population data
-bg20 <- get_decennial(geography = 'block group', variables = c('P1_001N','P1_003N','P2_005N'), year = 2020, sumfile = "pl", state = "MA", output = 'wide')
+bg20 <- get_decennial(geography = 'block group', variables = c('P2_001N', 'P2_005N'), year = 2020, sumfile = "pl", state = "MA", output = 'wide')
 ```
 ACS
 ```{r}
@@ -135,7 +135,7 @@ Calculate counts for Census - total pop and minority pop
 
 ```{r}
 #total population
-bg20$TotalPop <- bg20$P1_001N
+bg20$TotalPop <- bg20$P2_001N
 #minority population
 bg20$MinPop <- bg20$TotalPop - bg20$P2_005N
 
@@ -188,8 +188,7 @@ acsbgs$acs_low_inc_hh <- round(acsbgs$B19001_002E + acsbgs$B19001_003E + acsbgs$
 ####LEP####
 acsbgs$acs_pop_5p <- acsbgs$B16004_001E
 
-acsbgs$acs_lep_pop <- (acsbgs$B16004_001E-acsbgs$B16004_003E-acsbgs$B16004_005E-acsbgs$B16004_010E-acsbgs$B16004_015E-
-                       acsbgs$B16004_020E-acsbgs$B16004_025E-acsbgs$B16004_027E-acsbgs$B16004_032E-acsbgs$B16004_037E-
+acsbgs$acs_lep_pop <- (acsbgs$B16004_001E-acsbgs$B16004_003E-acsbgs$B16004_005E-acsbgs$B16004_010E-acsbgs$B16004_015E-acsbgs$B16004_020E-acsbgs$B16004_025E-acsbgs$B16004_027E-acsbgs$B16004_032E-acsbgs$B16004_037E-
                        acsbgs$B16004_042E-acsbgs$B16004_047E-acsbgs$B16004_049E-acsbgs$B16004_054E-acsbgs$B16004_059E-
                        acsbgs$B16004_064E) 
 
@@ -233,14 +232,22 @@ acstrts$acs_workers16p <- acstrts$B08301_001E
 
 Import the TIP data
 ```{r}
-#tip projects with three different geography types
-# tip_bg_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_acs19.csv")
-# tip_bg_cen20 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_bg_cen20.csv")
-# tip_tract_acs19 <- read_csv("G:/Data_Resources/tip stuff/TIP_scoring/ffy2023/tip_tract_acs19.csv")
+# tables for each input geometry/census geometry combination
+home_dir <- "C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/arcpy_outputs/"
+points_bg <-       read.csv(paste(home_dir, "TIP_24_28_points_area_fractions_v2.csv", sep=""))
+points_tract <-    read.csv(paste(home_dir, "TIP_24_28_points_area_fractions_tracts_v2.csv", sep=""))
+lines_bg <-        read.csv(paste(home_dir, "TIP_24_28_lines_area_fractions_v2.csv", sep=""))
+lines_tract <-     read.csv(paste(home_dir, "TIP_24_28_lines_area_fractions_tracts_v2.csv", sep=""))
+polygons_bg <-     read.csv(paste(home_dir, "TIP_24_28_polygon_area_fractions_v2.csv", sep=""))
+polygons_tract <-  read.csv(paste(home_dir, "TIP_24_28_polygon_area_fractions_tracts_v2.csv", sep=""))
 
-tip_bg_cen20 <- read.csv("C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/arcpy_outputs/TIP_projects_lines_netBufPoly_blkgrps_111422.csv")
+tip_bg_cen20 <- do.call("rbind", list(points_bg,
+                                      lines_bg,
+                                      polygons_bg))
 
-tip_tract_cen20 <- read.csv("C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/arcpy_outputs/TIP_projects_lines_tracts_test_111422.csv")
+tip_tract_cen20 <- do.call("rbind", list(points_tract,
+                                      lines_tract,
+                                      polygons_tract))
 
 # tip_bg_acs19 <- read_csv("./data/tip_bg_acs19.csv")
 # tip_bg_cen20 <- read_csv("./data/tip_bg_cen20.csv")
@@ -285,26 +292,26 @@ tip_bg_cen[is.na(tip_bg_cen)] <- 0
 Apply Area Fraction to BGs and Tracts 
 ```{r}
 #2020 Census
-tip_bg_cen$TotalPop_AF<- tip_bg_cen$P1_001N*tip_bg_cen$area_fraction
-tip_bg_cen$MinPop_AF<- tip_bg_cen$P1_003N*tip_bg_cen$area_fraction
+tip_bg_cen$TotalPop_AF <- round(tip_bg_cen$P2_001N*tip_bg_cen$area_fraction)
+tip_bg_cen$MinPop_AF   <- round(tip_bg_cen$MinPop*tip_bg_cen$area_fraction)
 
 #2020 ACS - BGs
 #POV & 2x POV level
 tip_bg_acs$pov_stat_det_est_AF <- tip_bg_acs$pov_stat_det_est*tip_bg_acs$area_fraction
-tip_bg_acs$lt_2x_pov_est_AF <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
-tip_bg_acs$lt_2x_pov_moe_AF <- tip_bg_acs$lt_2x_pov_moe*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_est_AF    <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
+tip_bg_acs$lt_2x_pov_moe_AF    <- tip_bg_acs$lt_2x_pov_moe*tip_bg_acs$area_fraction
 
 
 ####HOUSEHOLDS - 0VEH AND LOWINC####
-tip_bg_acs$acs_hh_AF <- tip_bg_acs$acs_hh*tip_bg_acs$area_fraction
-tip_bg_acs$acs_0veh_hh_AF <- tip_bg_acs$acs_0veh_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_hh_AF          <- tip_bg_acs$acs_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_0veh_hh_AF     <- tip_bg_acs$acs_0veh_hh*tip_bg_acs$area_fraction
 tip_bg_acs$acs_0veh_hh_shr_AF <- tip_bg_acs$acs_0veh_hh_shr*tip_bg_acs$area_fraction
-tip_bg_acs$acs_tot_hh_AF <- tip_bg_acs$acs_tot_hh*tip_bg_acs$area_fraction
-tip_bg_acs$acs_low_inc_hh_AF <- tip_bg_acs$acs_low_inc_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_tot_hh_AF      <- tip_bg_acs$acs_tot_hh*tip_bg_acs$area_fraction
+tip_bg_acs$acs_low_inc_hh_AF  <- tip_bg_acs$acs_low_inc_hh*tip_bg_acs$area_fraction
 
 
 ####LEP####
-tip_bg_acs$acs_pop_5p_AF <- tip_bg_acs$acs_pop_5p*tip_bg_acs$area_fraction
+tip_bg_acs$acs_pop_5p_AF  <- tip_bg_acs$acs_pop_5p*tip_bg_acs$area_fraction
 tip_bg_acs$acs_lep_pop_AF <- tip_bg_acs$acs_lep_pop*tip_bg_acs$area_fraction
 
 ####ACS AGE AND HH#####
@@ -314,12 +321,12 @@ tip_bg_acs$bg_totpop_AF <- tip_bg_acs$bg_totpop*tip_bg_acs$area_fraction
 
 
 #2020 ACS - Tracts
-tip_tract_acs$acs_noninst_pop_AF <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_noninst_pop_AF    <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
 tip_tract_acs$acs_sr_noninst_pop_AF <- tip_tract_acs$acs_sr_noninst_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_disab_pop_AF <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_sr_disab_pop_AF <- tip_tract_acs$acs_sr_disab_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_pop16p_AF <- tip_tract_acs$acs_pop16p*tip_tract_acs$area_fraction
-tip_tract_acs$acs_workers16p_AF <- tip_tract_acs$acs_workers16p*tip_tract_acs$area_fraction
+tip_tract_acs$acs_disab_pop_AF      <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_sr_disab_pop_AF   <- tip_tract_acs$acs_sr_disab_pop*tip_tract_acs$area_fraction
+tip_tract_acs$acs_pop16p_AF         <- tip_tract_acs$acs_pop16p*tip_tract_acs$area_fraction
+tip_tract_acs$acs_workers16p_AF     <- tip_tract_acs$acs_workers16p*tip_tract_acs$area_fraction
 
 ```
 
@@ -413,7 +420,7 @@ final <- all_vars_round_pops %>% select(
   disab_round,
   disab_perc)
 
-write.csv(final, "C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/tip_demog_pct_2020ACS_2020Cen.csv")
+write.csv(final, "C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/TIP_24_28_scoring_final_v2.csv")
 
 ```
 
