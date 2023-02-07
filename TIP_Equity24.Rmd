@@ -19,6 +19,12 @@ library(stringr)
 library(ggplot2)
 library(readr)
 ```
+
+```{r}
+output_table <- "\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_equity_half_mile.csv"
+```
+
+
 3. Standard Error Function
 ```{r}
 # standard error proportion fxn
@@ -250,9 +256,9 @@ tip_tract_cen20 <- do.call("rbind", list(points_tract,
                                       polygons_tract))
 
 # Access to Infrastructure version
-tip_bg_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_bg_point25_mi.csv")
+tip_bg_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_bg_point5_mi.csv")
 
-tip_tract_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_tract_point25_mi.csv")
+tip_tract_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_tract_point5_mi.csv")
 
 
 # clean up!
@@ -409,7 +415,7 @@ final <- all_vars_round_pops %>% select(
   disab_round,
   disab_perc)
 
-write.csv(final, "\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_equity_quarter_mile.csv")
+write.csv(final, output_table)
 
 ```
 
