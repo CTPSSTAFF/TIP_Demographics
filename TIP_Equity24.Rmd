@@ -2,7 +2,7 @@
 title: "TIP_Equity24"
 author: "Margaret Atkinson"
 output: html_document
-updated_date: "2023-01-26"
+updated_date: "2023-02-13"
 updated_by: "Seth Strumwasser"
 ---
 
@@ -21,7 +21,16 @@ library(readr)
 ```
 
 ```{r}
-output_table <- "\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_equity_half_mile.csv"
+# configuration
+input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\charging_stations_AF_blkgrps_quarter_mile.csv"
+input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\charging_stations_AF_tracts_quarter_mile.csv"
+
+# if you have multiple input geometries, combine them here:
+#
+# input_blkgrps_table <- do.call("rbind", list( - BLOCK GROUP TABLES HERE - ))
+# input_tracts_table <- do.call("rbind", list( - TRACT TABLES HERE - ))
+
+output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\charging_stations_quarter_mile_equity.csv"
 ```
 
 
@@ -239,47 +248,25 @@ acstrts$acs_workers16p <- acstrts$B08301_001E
 Import the TIP data
 ```{r}
 # tables for each input geometry/census geometry combination
-home_dir <- "C:/Users/sstrumwasser.AD/Documents/TIP_Equity23/arcpy_outputs/"
-points_bg <-       read.csv(paste(home_dir, "TIP_24_28_points_area_fractions_v2.csv", sep=""))
-points_tract <-    read.csv(paste(home_dir, "TIP_24_28_points_area_fractions_tracts_v2.csv", sep=""))
-lines_bg <-        read.csv(paste(home_dir, "TIP_24_28_lines_area_fractions_v2.csv", sep=""))
-lines_tract <-     read.csv(paste(home_dir, "TIP_24_28_lines_area_fractions_tracts_v2.csv", sep=""))
-polygons_bg <-     read.csv(paste(home_dir, "TIP_24_28_polygon_area_fractions_v2.csv", sep=""))
-polygons_tract <-  read.csv(paste(home_dir, "TIP_24_28_polygon_area_fractions_tracts_v2.csv", sep=""))
+bg_cen20 <- input_blkgrps_table
 
-tip_bg_cen20 <- do.call("rbind", list(points_bg,
-                                      lines_bg,
-                                      polygons_bg))
+tract_cen20 <- input_tracts_table
 
-tip_tract_cen20 <- do.call("rbind", list(points_tract,
-                                      lines_tract,
-                                      polygons_tract))
-
-# Access to Infrastructure version
-tip_bg_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_bg_point5_mi.csv")
-
-tip_tract_cen20 <- read.csv("C:\\Users\\sstrumwasser.AD\\Documents\\Access_to_Infrastructure\\outputs\\bluebikes_area_fractions_tract_point5_mi.csv")
-
-
-# clean up!
-rm(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
-               acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
-               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
-               acs_workers16p_shr,acs_pop75p,acs_pop18u)
+proj_id_field_name <- colnames(input_blkgrps_table)[2]
 
 ```
 
 Join TIP data to demographic data (Block Groups and Tracts)
 ```{r}
 
-tip_bg_acs <- merge(tip_bg_cen20 %>% select(geoid, area_fraction,TIP_ID), acsbgs, by.x =char('geoid'), by.y ='GEOID')
-tip_bg_acs[is.na(tip_bg_acs)] <- 0
+bg_acs <- merge(bg_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), acsbgs, by.x =char('geoid'), by.y ='GEOID')
+bg_acs[is.na(bg_acs)] <- 0
 
-tip_tract_acs <- merge(tip_tract_cen20 %>% select(geoid, area_fraction,TIP_ID),acstrts, by.x ='geoid', by.y ='GEOID')
-tip_tract_acs[is.na(tip_tract_acs)] <- 0
+tract_acs <- merge(tract_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), acstrts, by.x ='geoid', by.y ='GEOID')
+tract_acs[is.na(tract_acs)] <- 0
 
-tip_bg_cen <- merge(tip_bg_cen20 %>% select(geoid, area_fraction,TIP_ID), bg20, by.x ='geoid', by.y ='GEOID')
-tip_bg_cen[is.na(tip_bg_cen)] <- 0
+bg_cen <- merge(bg_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), bg20, by.x ='geoid', by.y ='GEOID')
+bg_cen[is.na(bg_cen)] <- 0
 
 ```
 
@@ -287,54 +274,54 @@ tip_bg_cen[is.na(tip_bg_cen)] <- 0
 Apply Area Fraction to BGs and Tracts 
 ```{r}
 #2020 Census
-tip_bg_cen$TotalPop_AF <- round(tip_bg_cen$P2_001N*tip_bg_cen$area_fraction)
-tip_bg_cen$MinPop_AF   <- round(tip_bg_cen$MinPop*tip_bg_cen$area_fraction)
+bg_cen$TotalPop_AF <- round(bg_cen$P2_001N*bg_cen$area_fraction)
+bg_cen$MinPop_AF   <- round(bg_cen$MinPop*bg_cen$area_fraction)
 
 #2020 ACS - BGs
 #POV & 2x POV level
-tip_bg_acs$pov_stat_det_est_AF <- tip_bg_acs$pov_stat_det_est*tip_bg_acs$area_fraction
-tip_bg_acs$lt_2x_pov_est_AF    <- tip_bg_acs$lt_2x_pov_est*tip_bg_acs$area_fraction
-tip_bg_acs$lt_2x_pov_moe_AF    <- tip_bg_acs$lt_2x_pov_moe*tip_bg_acs$area_fraction
+bg_acs$pov_stat_det_est_AF <- bg_acs$pov_stat_det_est*bg_acs$area_fraction
+bg_acs$lt_2x_pov_est_AF    <- bg_acs$lt_2x_pov_est*bg_acs$area_fraction
+bg_acs$lt_2x_pov_moe_AF    <- bg_acs$lt_2x_pov_moe*bg_acs$area_fraction
 
 
 ####HOUSEHOLDS - 0VEH AND LOWINC####
-tip_bg_acs$acs_hh_AF          <- tip_bg_acs$acs_hh*tip_bg_acs$area_fraction
-tip_bg_acs$acs_0veh_hh_AF     <- tip_bg_acs$acs_0veh_hh*tip_bg_acs$area_fraction
-tip_bg_acs$acs_0veh_hh_shr_AF <- tip_bg_acs$acs_0veh_hh_shr*tip_bg_acs$area_fraction
-tip_bg_acs$acs_tot_hh_AF      <- tip_bg_acs$acs_tot_hh*tip_bg_acs$area_fraction
-tip_bg_acs$acs_low_inc_hh_AF  <- tip_bg_acs$acs_low_inc_hh*tip_bg_acs$area_fraction
+bg_acs$acs_hh_AF          <- bg_acs$acs_hh*bg_acs$area_fraction
+bg_acs$acs_0veh_hh_AF     <- bg_acs$acs_0veh_hh*bg_acs$area_fraction
+bg_acs$acs_0veh_hh_shr_AF <- bg_acs$acs_0veh_hh_shr*bg_acs$area_fraction
+bg_acs$acs_tot_hh_AF      <- bg_acs$acs_tot_hh*bg_acs$area_fraction
+bg_acs$acs_low_inc_hh_AF  <- bg_acs$acs_low_inc_hh*bg_acs$area_fraction
 
 
 ####LEP####
-tip_bg_acs$acs_pop_5p_AF  <- tip_bg_acs$acs_pop_5p*tip_bg_acs$area_fraction
-tip_bg_acs$acs_lep_pop_AF <- tip_bg_acs$acs_lep_pop*tip_bg_acs$area_fraction
+bg_acs$acs_pop_5p_AF  <- bg_acs$acs_pop_5p*bg_acs$area_fraction
+bg_acs$acs_lep_pop_AF <- bg_acs$acs_lep_pop*bg_acs$area_fraction
 
 ####ACS AGE AND HH#####
-tip_bg_acs$bg_pop75p_AF <- tip_bg_acs$bg_pop75p*tip_bg_acs$area_fraction
-tip_bg_acs$bg_pop18u_AF <- tip_bg_acs$bg_pop18u*tip_bg_acs$area_fraction
-tip_bg_acs$bg_totpop_AF <- tip_bg_acs$bg_totpop*tip_bg_acs$area_fraction
+bg_acs$bg_pop75p_AF <- bg_acs$bg_pop75p*bg_acs$area_fraction
+bg_acs$bg_pop18u_AF <- bg_acs$bg_pop18u*bg_acs$area_fraction
+bg_acs$bg_totpop_AF <- bg_acs$bg_totpop*bg_acs$area_fraction
 
 
 #2020 ACS - Tracts
-tip_tract_acs$acs_noninst_pop_AF    <- tip_tract_acs$acs_noninst_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_sr_noninst_pop_AF <- tip_tract_acs$acs_sr_noninst_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_disab_pop_AF      <- tip_tract_acs$acs_disab_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_sr_disab_pop_AF   <- tip_tract_acs$acs_sr_disab_pop*tip_tract_acs$area_fraction
-tip_tract_acs$acs_pop16p_AF         <- tip_tract_acs$acs_pop16p*tip_tract_acs$area_fraction
-tip_tract_acs$acs_workers16p_AF     <- tip_tract_acs$acs_workers16p*tip_tract_acs$area_fraction
+tract_acs$acs_noninst_pop_AF    <- tract_acs$acs_noninst_pop*tract_acs$area_fraction
+tract_acs$acs_sr_noninst_pop_AF <- tract_acs$acs_sr_noninst_pop*tract_acs$area_fraction
+tract_acs$acs_disab_pop_AF      <- tract_acs$acs_disab_pop*tract_acs$area_fraction
+tract_acs$acs_sr_disab_pop_AF   <- tract_acs$acs_sr_disab_pop*tract_acs$area_fraction
+tract_acs$acs_pop16p_AF         <- tract_acs$acs_pop16p*tract_acs$area_fraction
+tract_acs$acs_workers16p_AF     <- tract_acs$acs_workers16p*tract_acs$area_fraction
 
 ```
 
 
 Sum by Project
 ```{r}
-buf_bg_cen <- tip_bg_cen %>% group_by(TIP_ID) %>% summarise(
+buf_bg_cen <- bg_cen %>% group_by_at(proj_id_field_name) %>% summarise(
   TotalPop = sum(TotalPop_AF),
   MinPop = sum(MinPop_AF)
 )
 
 
-buf_bg_acs <- tip_bg_acs %>% group_by(TIP_ID) %>% summarise(
+buf_bg_acs <- bg_acs %>% group_by_at(proj_id_field_name) %>% summarise(
   pov_stat_det_est = sum(pov_stat_det_est_AF),
   lt_2x_pov_est = sum(lt_2x_pov_est_AF),
   lt_2x_pov_moe = sum(lt_2x_pov_moe_AF),
@@ -351,8 +338,8 @@ buf_bg_acs <- tip_bg_acs %>% group_by(TIP_ID) %>% summarise(
 )
 
 
-buf_tract_acs <- tip_tract_acs %>% 
-  group_by(TIP_ID) %>% 
+buf_tract_acs <- tract_acs %>% 
+  group_by_at(proj_id_field_name) %>% 
   summarise(
     acs_noninst_pop = sum(acs_noninst_pop_AF),
     acs_sr_noninst_pop = sum(acs_sr_noninst_pop_AF),
@@ -386,8 +373,8 @@ buf_tract_acs$workers16p_perc <- round(buf_tract_acs$acs_workers16p / buf_tract_
 
 Export file
 ```{r}
-buf_bg <- merge(buf_bg_acs, buf_bg_cen, by="TIP_ID")
-all_vars <- merge(buf_bg, buf_tract_acs, by="TIP_ID")
+buf_bg <- merge(buf_bg_acs, buf_bg_cen, by=proj_id_field_name)
+all_vars <- merge(buf_bg, buf_tract_acs, by=proj_id_field_name)
 all_vars_round_pops <- all_vars %>%
   mutate(
     MinPop_round = round(MinPop,0),
@@ -399,11 +386,27 @@ all_vars_round_pops <- all_vars %>%
     disab_round = round(acs_disab_pop,0),
     .keep = c("all")
   )
+
+# possible_fields <- c(TotalPop_round,
+#   MinPop_round,
+#   MinPerc,
+#   lt_2x_pov_est_round,
+#   lt_2x_pov_perc,
+#   lep_round,
+#   lep_perc,
+#   u18_round,
+#   u18_perc,
+#   p75_round,
+#   p75_perc,
+#   disab_round,
+#   disab_perc)
+
+
 final <- all_vars_round_pops %>% select(
-  TIP_ID,
+  all_of(proj_id_field_name),
   TotalPop_round,
-  MinPop_round, 
-  MinPerc, 
+  MinPop_round,
+  MinPerc,
   lt_2x_pov_est_round,
   lt_2x_pov_perc,
   lep_round,
@@ -413,10 +416,18 @@ final <- all_vars_round_pops %>% select(
   p75_round,
   p75_perc,
   disab_round,
-  disab_perc)
+  disab_perc
+  )
 
 write.csv(final, output_table)
 
+```
+
+```{r}
+# qc
+all_bgs <- read.csv('\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_scroing_networks_3.0\\suffolk_freight_area_fractions_bg.csv')
+bg_cen <- merge(all_bgs %>% select(geoid), bg20, by.x ='geoid', by.y ='GEOID')
+sum_test <- sum(bg_cen$P2_001N)
 ```
 
 
