@@ -22,15 +22,15 @@ library(readr)
 
 ```{r}
 # configuration
-input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\test_densify_100m_blkgrps.csv"
-input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\test_densify_100m_tracts.csv"
+input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_bg_af.csv"
+input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_tract_af.csv"
 
 # if you have multiple input geometries, combine them here:
 #
 # input_blkgrps_table <- do.call("rbind", list( - BLOCK GROUP TABLES HERE - ))
 # input_tracts_table <- do.call("rbind", list( - TRACT TABLES HERE - ))
 
-output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\test_densify_100m_output.csv"
+output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\ebikes_results.csv"
 ```
 
 
@@ -137,7 +137,7 @@ bg20 <- get_decennial(geography = 'block group', variables = c('P2_001N', 'P2_00
 ```
 ACS
 ```{r}
-acs_yr <- 2021
+acs_yr <- 2020
 
 # download block group geography and demographic data
 acsbgs <- get_acs(geography = 'block group', variables = toupper(acs_fields), year = acs_yr, state = "MA", output = 'wide')
