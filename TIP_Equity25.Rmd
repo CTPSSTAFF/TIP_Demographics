@@ -2,7 +2,7 @@
 title: "TIP_Equity24"
 author: "Margaret Atkinson"
 output: html_document
-updated_date: "2023-02-13"
+updated_date: "2024-01-23"
 updated_by: "Seth Strumwasser"
 ---
 
@@ -45,9 +45,9 @@ std_err_proportion <- function(output, numerator, denominator, std_err_numerator
   if(denominator == 0){
     result <- 0
   }else{
-    radicand <- (std_err_numerator^2) - ((numerator / denominator)^2) * (std_err_denominator^2)
+    radicand <- (std_err_numerator^2) - ((numerator / denominator)^2)  *  (std_err_denominator^2)
     if(radicand < 0){
-      radicand <- (std_err_numerator^2) + ((numerator / denominator)^2) * (std_err_denominator^2)
+      radicand <- (std_err_numerator^2) + ((numerator / denominator)^2)  *  (std_err_denominator^2)
     }
     if(numerator == denominator){
       result <- round(std_err_numerator / denominator, 5)
@@ -131,7 +131,7 @@ print("Done.")
 
 Download tables from tidycensus
 ```{r}
-# Grab Census 2020 geography, total population, and minority data
+# Grab Census 2020 geography, total population, minority data, older adults, youth
 # download block groups and minority data and total population data
 bg20 <- 
   get_decennial(geography = 'block group', 
@@ -169,8 +169,16 @@ Calculate counts for Census - total pop and minority pop
 ```{r}
 #total population
 bg20$TotalPop <- bg20$P2_001N
+
 #minority population
-bg20$MinPop <- bg20$TotalPop - bg20$P2_005N
+bg20$MinPop <- bg20$TotalPop - bg20$P2_003N
+
+# Older adults
+bg20 <- bg20 %>% 
+  mutate(OldPop = sum(P12_001N, P12_023N, P12_024N, P12_025N, P12_047N, 
+                      P12_048N, P12_049N),
+         YouthPop = sum(P12_003N, P12_004N, P12_005N, P12_006N, P12_027N,  
+                              P12_028N, P12_029N, P12_030N))
 
 ```
 
@@ -184,8 +192,8 @@ acsbgs$pov_stat_det_moe <- acsbgs$C17002_001M
 acsbgs$lt_2x_pov_est <- acsbgs$C17002_001E - acsbgs$C17002_008E
 
 #std_err_sum (e.g. standard error of a sum or difference)
-# std_err_sum =  round(((stderr1^2)+(stderr2^2))*0.5,0)
-acsbgs$lt_2x_pov_moe <- round(((acsbgs$C17002_001M^2)+(acsbgs$C17002_008M^2))*0.5,0)
+# std_err_sum =  round(((stderr1^2)+(stderr2^2)) * 0.5,0)
+acsbgs$lt_2x_pov_moe <- round(((acsbgs$C17002_001M^2)+(acsbgs$C17002_008M^2)) * 0.5,0)
 
 acsbgs <- acsbgs %>% mutate(lt_2x_pov_shr_est = ifelse(pov_stat_det_est == 0, 0, round(lt_2x_pov_est/pov_stat_det_est, 5)))
 
@@ -215,15 +223,13 @@ acsbgs$acs_tot_hh <- acsbgs$B19001_001E
 # TODO: Check whether we can calculate the 392/5000 at runtime.
 acsbgs$acs_low_inc_hh <- round(acsbgs$B19001_002E + acsbgs$B19001_003E + acsbgs$B19001_004E + acsbgs$B19001_005E +
                                acsbgs$B19001_006E + acsbgs$B19001_007E + acsbgs$B19001_008E + acsbgs$B19001_009E +
-                               (392/5000)*acsbgs$B19001_010E,0)
+                               (392/5000) * acsbgs$B19001_010E,0)
 
 
 ####LEP####
 acsbgs$acs_pop_5p <- acsbgs$B16004_001E
 
-acsbgs$acs_lep_pop <- (acsbgs$B16004_001E-acsbgs$B16004_003E-acsbgs$B16004_005E-acsbgs$B16004_010E-acsbgs$B16004_015E-acsbgs$B16004_020E-acsbgs$B16004_025E-acsbgs$B16004_027E-acsbgs$B16004_032E-acsbgs$B16004_037E-
-                       acsbgs$B16004_042E-acsbgs$B16004_047E-acsbgs$B16004_049E-acsbgs$B16004_054E-acsbgs$B16004_059E-
-                       acsbgs$B16004_064E) 
+acsbgs$acs_lep_pop <- (acsbgs$B16004_001E - acsbgs$B16004_003E - acsbgs$B16004_005E - acsbgs$B16004_010E - acsbgs$B16004_015E - acsbgs$B16004_020E - acsbgs$B16004_025E - acsbgs$B16004_027E - acsbgs$B16004_032E - acsbgs$B16004_037E - acsbgs$B16004_042E - acsbgs$B16004_047E - acsbgs$B16004_049E - acsbgs$B16004_054E - acsbgs$B16004_059E - acsbgs$B16004_064E) 
 
 
 
@@ -250,9 +256,10 @@ acstrts$acs_noninst_pop <- acstrts$B18101_001E
 
 acstrts$acs_sr_noninst_pop <- (acstrts$B18101_015E +acstrts$B18101_018E +acstrts$B18101_034E +acstrts$B18101_037E)
 
-acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B18101_010E + acstrts$B18101_013E +
-                         acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_023E + acstrts$B18101_026E +
-                         acstrts$B18101_029E + acstrts$B18101_032E + acstrts$B18101_035E + acstrts$B18101_038E)
+acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B18101_010E +  
+                          acstrts$B18101_013E + acstrts$B18101_016E + acstrts$B18101_019E +
+                          acstrts$B18101_023E + acstrts$B18101_026E + acstrts$B18101_029E +
+                          acstrts$B18101_032E + acstrts$B18101_035E + acstrts$B18101_038E)
 
 acstrts$acs_sr_disab_pop <- (acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_035E + acstrts$B18101_038E)
 
@@ -277,13 +284,19 @@ proj_id_field_name <- colnames(input_blkgrps_table)[2]
 Join TIP data to demographic data (Block Groups and Tracts)
 ```{r}
 
-bg_acs <- merge(bg_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), acsbgs, by.x =char('geoid'), by.y ='GEOID')
+bg_acs <- merge(bg_cen20 %>% 
+                  select(geoid, area_fraction, all_of(proj_id_field_name)), acsbgs, 
+                  by.x =char('geoid'), by.y ='GEOID')
 bg_acs[is.na(bg_acs)] <- 0
 
-tract_acs <- merge(tract_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), acstrts, by.x ='geoid', by.y ='GEOID')
+tract_acs <- merge(tract_cen20 %>% 
+                     select(geoid, area_fraction, all_of(proj_id_field_name)), acstrts, 
+                     by.x ='geoid', by.y ='GEOID')
 tract_acs[is.na(tract_acs)] <- 0
 
-bg_cen <- merge(bg_cen20 %>% select(geoid, area_fraction, all_of(proj_id_field_name)), bg20, by.x ='geoid', by.y ='GEOID')
+bg_cen <- merge(bg_cen20 %>% 
+                  select(geoid, area_fraction, all_of(proj_id_field_name)), bg20, by.x ='geoid', 
+                  by.y ='GEOID')
 bg_cen[is.na(bg_cen)] <- 0
 
 ```
@@ -292,41 +305,43 @@ bg_cen[is.na(bg_cen)] <- 0
 Apply Area Fraction to BGs and Tracts 
 ```{r}
 #2020 Census
-bg_cen$TotalPop_AF <- round(bg_cen$P2_001N*bg_cen$area_fraction)
-bg_cen$MinPop_AF   <- round(bg_cen$MinPop*bg_cen$area_fraction)
+bg_cen$TotalPop_AF <- round(bg_cen$P2_001N  *  bg_cen$area_fraction)
+bg_cen$MinPop_AF   <- round(bg_cen$MinPop  *  bg_cen$area_fraction)
+bg_cen$OldPop_AF   <- round(bg_cen$OldPop  *  bg_cen$area_fraction)
+bg_cen$YouthPop_AF   <- round(bg_cen$YouthPop  *  bg_cen$area_fraction)
 
 #2020 ACS - BGs
 #POV & 2x POV level
-bg_acs$pov_stat_det_est_AF <- bg_acs$pov_stat_det_est*bg_acs$area_fraction
-bg_acs$lt_2x_pov_est_AF    <- bg_acs$lt_2x_pov_est*bg_acs$area_fraction
-bg_acs$lt_2x_pov_moe_AF    <- bg_acs$lt_2x_pov_moe*bg_acs$area_fraction
+bg_acs$pov_stat_det_est_AF <- bg_acs$pov_stat_det_est  *  bg_acs$area_fraction
+bg_acs$lt_2x_pov_est_AF    <- bg_acs$lt_2x_pov_est  *  bg_acs$area_fraction
+bg_acs$lt_2x_pov_moe_AF    <- bg_acs$lt_2x_pov_moe  *  bg_acs$area_fraction
 
 
 ####HOUSEHOLDS - 0VEH AND LOWINC####
-bg_acs$acs_hh_AF          <- bg_acs$acs_hh*bg_acs$area_fraction
-bg_acs$acs_0veh_hh_AF     <- bg_acs$acs_0veh_hh*bg_acs$area_fraction
-bg_acs$acs_0veh_hh_shr_AF <- bg_acs$acs_0veh_hh_shr*bg_acs$area_fraction
-bg_acs$acs_tot_hh_AF      <- bg_acs$acs_tot_hh*bg_acs$area_fraction
-bg_acs$acs_low_inc_hh_AF  <- bg_acs$acs_low_inc_hh*bg_acs$area_fraction
+bg_acs$acs_hh_AF          <- bg_acs$acs_hh * bg_acs$area_fraction
+bg_acs$acs_0veh_hh_AF     <- bg_acs$acs_0veh_hh * bg_acs$area_fraction
+bg_acs$acs_0veh_hh_shr_AF <- bg_acs$acs_0veh_hh_shr * bg_acs$area_fraction
+bg_acs$acs_tot_hh_AF      <- bg_acs$acs_tot_hh * bg_acs$area_fraction
+bg_acs$acs_low_inc_hh_AF  <- bg_acs$acs_low_inc_hh * bg_acs$area_fraction
 
 
 ####LEP####
-bg_acs$acs_pop_5p_AF  <- bg_acs$acs_pop_5p*bg_acs$area_fraction
-bg_acs$acs_lep_pop_AF <- bg_acs$acs_lep_pop*bg_acs$area_fraction
+bg_acs$acs_pop_5p_AF  <- bg_acs$acs_pop_5p * bg_acs$area_fraction
+bg_acs$acs_lep_pop_AF <- bg_acs$acs_lep_pop * bg_acs$area_fraction
 
 ####ACS AGE AND HH#####
-bg_acs$bg_pop75p_AF <- bg_acs$bg_pop75p*bg_acs$area_fraction
-bg_acs$bg_pop18u_AF <- bg_acs$bg_pop18u*bg_acs$area_fraction
-bg_acs$bg_totpop_AF <- bg_acs$bg_totpop*bg_acs$area_fraction
+bg_acs$bg_pop75p_AF <- bg_acs$bg_pop75p * bg_acs$area_fraction
+bg_acs$bg_pop18u_AF <- bg_acs$bg_pop18u * bg_acs$area_fraction
+bg_acs$bg_totpop_AF <- bg_acs$bg_totpop * bg_acs$area_fraction
 
 
 #2020 ACS - Tracts
-tract_acs$acs_noninst_pop_AF    <- tract_acs$acs_noninst_pop*tract_acs$area_fraction
-tract_acs$acs_sr_noninst_pop_AF <- tract_acs$acs_sr_noninst_pop*tract_acs$area_fraction
-tract_acs$acs_disab_pop_AF      <- tract_acs$acs_disab_pop*tract_acs$area_fraction
-tract_acs$acs_sr_disab_pop_AF   <- tract_acs$acs_sr_disab_pop*tract_acs$area_fraction
-tract_acs$acs_pop16p_AF         <- tract_acs$acs_pop16p*tract_acs$area_fraction
-tract_acs$acs_workers16p_AF     <- tract_acs$acs_workers16p*tract_acs$area_fraction
+tract_acs$acs_noninst_pop_AF    <- tract_acs$acs_noninst_pop * tract_acs$area_fraction
+tract_acs$acs_sr_noninst_pop_AF <- tract_acs$acs_sr_noninst_pop * tract_acs$area_fraction
+tract_acs$acs_disab_pop_AF      <- tract_acs$acs_disab_pop * tract_acs$area_fraction
+tract_acs$acs_sr_disab_pop_AF   <- tract_acs$acs_sr_disab_pop * tract_acs$area_fraction
+tract_acs$acs_pop16p_AF         <- tract_acs$acs_pop16p * tract_acs$area_fraction
+tract_acs$acs_workers16p_AF     <- tract_acs$acs_workers16p * tract_acs$area_fraction
 
 ```
 
@@ -335,7 +350,9 @@ Sum by Project
 ```{r}
 buf_bg_cen <- bg_cen %>% group_by_at(proj_id_field_name) %>% summarise(
   TotalPop = sum(TotalPop_AF),
-  MinPop = sum(MinPop_AF)
+  MinPop = sum(MinPop_AF),
+  OldPop = sum(OldPop_AF),
+  YouthPop = sum(YouthPop_AF),
 )
 
 
@@ -374,6 +391,8 @@ Calculate Percentages
 ```{r}
 
 buf_bg_cen$MinPerc <- round(buf_bg_cen$MinPop/buf_bg_cen$TotalPop,2)
+buf_bg_cen$OldPerc <- round(buf_bg_cen$OldPop/buf_bg_cen$TotalPop,2)
+buf_bg_cen$YouthPerc <- round(buf_bg_cen$YouthPop/buf_bg_cen$TotalPop,2)
 
 buf_bg_acs$lt_2x_pov_perc <- round(buf_bg_acs$lt_2x_pov_est / buf_bg_acs$pov_stat_det_est,2)
 
@@ -397,6 +416,8 @@ all_vars_round_pops <- all_vars %>%
   mutate(
     MinPop_round = round(MinPop,0),
     TotalPop_round = round(TotalPop,0),
+    OldPop_round = round(OldPop, 0),
+    YouthPop_round = round(YouthPop, 0),
     lt_2x_pov_est_round = round(lt_2x_pov_est,0),
     lep_round = round(acs_lep_pop),
     u18_round = round(bg_pop18u,0),
@@ -425,14 +446,14 @@ final <- all_vars_round_pops %>% select(
   TotalPop_round,
   MinPop_round,
   MinPerc,
+  OldPop_round,
+  OldPerc,
+  YouthPop_round,
+  YouthPerc,
   lt_2x_pov_est_round,
   lt_2x_pov_perc,
   lep_round,
   lep_perc,
-  u18_round,
-  u18_perc,
-  p75_round,
-  p75_perc,
   disab_round,
   disab_perc
   )
