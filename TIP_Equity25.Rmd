@@ -6,6 +6,17 @@ updated_date: "2024-01-23"
 updated_by: "Seth Strumwasser"
 ---
 
+# TIP Demographics
+This script takes as input a table of area fractions by GEOID representing the proportion of that GEOID
+we want to count for each TIP project. In the script we follow these steps:
+
+1. Pull census data
+2. Apply area fractions
+3. Summarize by project
+4. Combine tables
+5. Arrange output table
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -209,21 +220,6 @@ acsbgs$lt_2x_pov_shr_moe <- apply(
     )
    )
 
-####HOUSEHOLDS - 0VEH AND LOWINC####
-acsbgs$acs_hh <- acsbgs$B25044_001E
-
-acsbgs$acs_0veh_hh <- acsbgs$B25044_003E + acsbgs$B25044_010E
-
-acsbgs$acs_0veh_hh_shr <- round(acsbgs$acs_0veh_hh/acsbgs$acs_hh,5)
-
-acsbgs$acs_tot_hh <- acsbgs$B19001_001E
-
-# Note: 392/5000 is most likely the share of the households in that last category
-# that are low-income. This would be calculated elsewhere and reported here.
-# TODO: Check whether we can calculate the 392/5000 at runtime.
-acsbgs$acs_low_inc_hh <- round(acsbgs$B19001_002E + acsbgs$B19001_003E + acsbgs$B19001_004E + acsbgs$B19001_005E +
-                               acsbgs$B19001_006E + acsbgs$B19001_007E + acsbgs$B19001_008E + acsbgs$B19001_009E +
-                               (392/5000) * acsbgs$B19001_010E,0)
 
 
 ####LEP####
@@ -233,7 +229,7 @@ acsbgs$acs_lep_pop <- (acsbgs$B16004_001E - acsbgs$B16004_003E - acsbgs$B16004_0
 
 
 
-####ACS AGE AND HH#####
+####ACS AGE#####
 
 acsbgs$bg_pop75p <- (acsbgs$B01001_023E+acsbgs$B01001_024E+acsbgs$B01001_025E+acsbgs$B01001_047E+acsbgs$B01001_048E+acsbgs$B01001_049E)
 
@@ -252,21 +248,10 @@ acsbgs$bg_totpop <- acsbgs$B01001_001E
 ACS - Tracts
 ```{r}
 ####DISABLED POP ACS####
-acstrts$acs_noninst_pop <- acstrts$B18101_001E
-
-acstrts$acs_sr_noninst_pop <- (acstrts$B18101_015E +acstrts$B18101_018E +acstrts$B18101_034E +acstrts$B18101_037E)
-
 acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B18101_010E +  
                           acstrts$B18101_013E + acstrts$B18101_016E + acstrts$B18101_019E +
                           acstrts$B18101_023E + acstrts$B18101_026E + acstrts$B18101_029E +
                           acstrts$B18101_032E + acstrts$B18101_035E + acstrts$B18101_038E)
-
-acstrts$acs_sr_disab_pop <- (acstrts$B18101_016E + acstrts$B18101_019E + acstrts$B18101_035E + acstrts$B18101_038E)
-
-
-acstrts$acs_pop16p <- acstrts$B23001_001E
-
-acstrts$acs_workers16p <- acstrts$B08301_001E
 
 ```
 
@@ -310,19 +295,11 @@ bg_cen$MinPop_AF   <- round(bg_cen$MinPop  *  bg_cen$area_fraction)
 bg_cen$OldPop_AF   <- round(bg_cen$OldPop  *  bg_cen$area_fraction)
 bg_cen$YouthPop_AF   <- round(bg_cen$YouthPop  *  bg_cen$area_fraction)
 
-#2020 ACS - BGs
+#2022 ACS - BGs
 #POV & 2x POV level
 bg_acs$pov_stat_det_est_AF <- bg_acs$pov_stat_det_est  *  bg_acs$area_fraction
 bg_acs$lt_2x_pov_est_AF    <- bg_acs$lt_2x_pov_est  *  bg_acs$area_fraction
 bg_acs$lt_2x_pov_moe_AF    <- bg_acs$lt_2x_pov_moe  *  bg_acs$area_fraction
-
-
-####HOUSEHOLDS - 0VEH AND LOWINC####
-bg_acs$acs_hh_AF          <- bg_acs$acs_hh * bg_acs$area_fraction
-bg_acs$acs_0veh_hh_AF     <- bg_acs$acs_0veh_hh * bg_acs$area_fraction
-bg_acs$acs_0veh_hh_shr_AF <- bg_acs$acs_0veh_hh_shr * bg_acs$area_fraction
-bg_acs$acs_tot_hh_AF      <- bg_acs$acs_tot_hh * bg_acs$area_fraction
-bg_acs$acs_low_inc_hh_AF  <- bg_acs$acs_low_inc_hh * bg_acs$area_fraction
 
 
 ####LEP####
@@ -335,13 +312,8 @@ bg_acs$bg_pop18u_AF <- bg_acs$bg_pop18u * bg_acs$area_fraction
 bg_acs$bg_totpop_AF <- bg_acs$bg_totpop * bg_acs$area_fraction
 
 
-#2020 ACS - Tracts
-tract_acs$acs_noninst_pop_AF    <- tract_acs$acs_noninst_pop * tract_acs$area_fraction
-tract_acs$acs_sr_noninst_pop_AF <- tract_acs$acs_sr_noninst_pop * tract_acs$area_fraction
+#2022 ACS - Tracts
 tract_acs$acs_disab_pop_AF      <- tract_acs$acs_disab_pop * tract_acs$area_fraction
-tract_acs$acs_sr_disab_pop_AF   <- tract_acs$acs_sr_disab_pop * tract_acs$area_fraction
-tract_acs$acs_pop16p_AF         <- tract_acs$acs_pop16p * tract_acs$area_fraction
-tract_acs$acs_workers16p_AF     <- tract_acs$acs_workers16p * tract_acs$area_fraction
 
 ```
 
@@ -360,11 +332,6 @@ buf_bg_acs <- bg_acs %>% group_by_at(proj_id_field_name) %>% summarise(
   pov_stat_det_est = sum(pov_stat_det_est_AF),
   lt_2x_pov_est = sum(lt_2x_pov_est_AF),
   lt_2x_pov_moe = sum(lt_2x_pov_moe_AF),
-  acs_hh = sum(acs_hh_AF),
-  acs_0veh_hh = sum(acs_0veh_hh_AF),
-  acs_0veh_hh_shr = sum(acs_0veh_hh_shr_AF),
-  acs_tot_hh = sum(acs_tot_hh_AF),
-  acs_low_inc_hh = sum(acs_low_inc_hh_AF),
   acs_pop_5p = sum(acs_pop_5p_AF),
   acs_lep_pop = sum(acs_lep_pop_AF),
   bg_pop75p = sum(bg_pop75p_AF),
@@ -375,14 +342,7 @@ buf_bg_acs <- bg_acs %>% group_by_at(proj_id_field_name) %>% summarise(
 
 buf_tract_acs <- tract_acs %>% 
   group_by_at(proj_id_field_name) %>% 
-  summarise(
-    acs_noninst_pop = sum(acs_noninst_pop_AF),
-    acs_sr_noninst_pop = sum(acs_sr_noninst_pop_AF),
-    acs_disab_pop = sum(acs_disab_pop_AF),
-    acs_sr_disab_pop = sum(acs_sr_disab_pop_AF),
-    acs_pop16p = sum(acs_pop16p_AF),
-    acs_workers16p = sum(acs_workers16p_AF)
-)
+  summarise(acs_disab_pop = sum(acs_disab_pop_AF))
 
 ```
 
