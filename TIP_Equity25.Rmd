@@ -33,13 +33,29 @@ library(readr)
 
 ```{r}
 # configuration
-input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_bg_af.csv"
-input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_tract_af.csv"
+# input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_bg_af.csv"
+# input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_tract_af.csv"
 
 # if you have multiple input geometries, combine them here:
 #
 # input_blkgrps_table <- do.call("rbind", list( - BLOCK GROUP TABLES HERE - ))
 # input_tracts_table <- do.call("rbind", list( - TRACT TABLES HERE - ))
+
+results_dir <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\"
+
+input_blkgrps_table <- do.call("rbind", list(
+  read_csv(paste0(results_dir, "\\lines_af_bg_eighth_mi.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_bg_quart_mi.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_bg_half_mi.csv")),
+  read_csv(paste0(results_dir, "\\polygons_af_bg.csv"))
+))
+
+input_tracts_table <- do.call("rbind", list(
+  read_csv(paste0(results_dir, "\\lines_af_tract_eighth_mi.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_tract_quart_mi.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_tract_half_mi.csv")),
+  read_csv(paste0(results_dir, "\\polygons_af_tract.csv"))
+))
 
 output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\ebikes_results.csv"
 ```
@@ -83,7 +99,7 @@ Sys.getenv("CENSUS_API_KEY")
 ```
 Prepare ACS 2020 Field Categories
 ```{r}
-# ACS 2020 Fields
+# ACS 2022 Fields
 # universe
 acs_noninst_pop <- c("b18101_001e")
 
@@ -96,15 +112,6 @@ acs_disabled_pop <- c("b18101_004e","b18101_007e","b18101_010e","b18101_013e","b
 
 # senior disabled
 acs_sr_disab_pop <- c("b18101_016e","b18101_019e","b18101_035e","b18101_038e")
-
-# number of households
-acs_hh <- c("b25044_001e")
-
-# 0 vehicle households
-acs_0veh_hh <- c("b25044_003e","b25044_010e")
-
-# low income households
-acs_low_inc_hh <- c("b19001_001e","b19001_002e","b19001_003e","b19001_004e","b19001_005e","b19001_006e","b19001_007e","b19001_008e","b19001_009e","b19001_010e")
 
 # lep universe
 acs_pop_5p <- c("b16004_001e")
@@ -122,12 +129,7 @@ pov_stat_det_moe <- c("c17002_001m")
 lt_2x_pov_est <- c("c17002_001e","c17002_008e")
 lt_2x_pov_moe <- c("c17002_001m","c17002_008m")
 
-# 16 or older population
-acs_pop16p <- c("b23001_001e")
-
-
-acs_workers16p <- c("b08301_001e")  
-acs_workers16p_shr <- c("b23001_001e","b08301_001e")
+# youth and older adults
 acs_pop75p <- c("B01001_023E","B01001_024E","B01001_025E","B01001_047E","B01001_048E","B01001_049E")
 acs_pop18u <- c("B01001_001E","B01001_003E","B01001_004E","B01001_005E","B01001_006E","B01001_027E","B01001_028E","B01001_029E","B01001_030E")
 
@@ -144,6 +146,8 @@ Download tables from tidycensus
 ```{r}
 # Grab Census 2020 geography, total population, minority data, older adults, youth
 # download block groups and minority data and total population data
+decennial_yr <- 2020
+
 bg20 <- 
   get_decennial(geography = 'block group', 
                 variables = c('P2_001N', 'P2_003N', # white and minority
@@ -151,7 +155,7 @@ bg20 <-
                               'P12_048N', 'P12_049N', # Older adults
                               'P12_003N', 'P12_004N', 'P12_005N', 'P12_006N', 'P12_027N',  
                               'P12_028N', 'P12_029N', 'P12_030N'), # Youth 
-                year = 2020, 
+                year = decennial_yr, 
                 sumfile = "dhc", 
                 state = "MA", 
                 output = 'wide')
@@ -184,7 +188,7 @@ bg20$TotalPop <- bg20$P2_001N
 #minority population
 bg20$MinPop <- bg20$TotalPop - bg20$P2_003N
 
-# Older adults
+# Older adults and youth
 bg20 <- bg20 %>% 
   mutate(OldPop = sum(P12_001N, P12_023N, P12_024N, P12_025N, P12_047N, 
                       P12_048N, P12_049N),
@@ -227,19 +231,7 @@ acsbgs$acs_pop_5p <- acsbgs$B16004_001E
 
 acsbgs$acs_lep_pop <- (acsbgs$B16004_001E - acsbgs$B16004_003E - acsbgs$B16004_005E - acsbgs$B16004_010E - acsbgs$B16004_015E - acsbgs$B16004_020E - acsbgs$B16004_025E - acsbgs$B16004_027E - acsbgs$B16004_032E - acsbgs$B16004_037E - acsbgs$B16004_042E - acsbgs$B16004_047E - acsbgs$B16004_049E - acsbgs$B16004_054E - acsbgs$B16004_059E - acsbgs$B16004_064E) 
 
-
-
-####ACS AGE#####
-
-acsbgs$bg_pop75p <- (acsbgs$B01001_023E+acsbgs$B01001_024E+acsbgs$B01001_025E+acsbgs$B01001_047E+acsbgs$B01001_048E+acsbgs$B01001_049E)
-
-acsbgs$bg_pop18u <- (acsbgs$B01001_003E+acsbgs$B01001_004E+acsbgs$B01001_005E+acsbgs$B01001_006E+
-                                          acsbgs$B01001_027E+acsbgs$B01001_028E+acsbgs$B01001_029E+acsbgs$B01001_030E)
-
 acsbgs$bg_totpop <- acsbgs$B01001_001E
-
-
-
 
 ```
 
@@ -356,15 +348,9 @@ buf_bg_cen$YouthPerc <- round(buf_bg_cen$YouthPop/buf_bg_cen$TotalPop,2)
 
 buf_bg_acs$lt_2x_pov_perc <- round(buf_bg_acs$lt_2x_pov_est / buf_bg_acs$pov_stat_det_est,2)
 
-buf_bg_acs$hh_0veh_perc <- round(buf_bg_acs$acs_0veh_hh / buf_bg_acs$acs_hh,2)
-buf_bg_acs$low_inc_hh_perc <- round(buf_bg_acs$acs_low_inc_hh / buf_bg_acs$acs_tot_hh,2)
 buf_bg_acs$lep_perc <- round(buf_bg_acs$acs_lep_pop / buf_bg_acs$acs_pop_5p,2)
-buf_bg_acs$p75_perc <- round(buf_bg_acs$bg_pop75p / buf_bg_acs$bg_totpop,2)
-buf_bg_acs$u18_perc <- round(buf_bg_acs$bg_pop18u / buf_bg_acs$bg_totpop,2)
 
 buf_tract_acs$disab_perc <- round(buf_tract_acs$acs_disab_pop / buf_tract_acs$acs_noninst_pop,2)
-buf_tract_acs$sr_disab_perc <- round(buf_tract_acs$acs_sr_disab_pop / buf_tract_acs$acs_sr_noninst_pop,2)
-buf_tract_acs$workers16p_perc <- round(buf_tract_acs$acs_workers16p / buf_tract_acs$acs_pop16p,2)
 
 ```
 
@@ -380,8 +366,6 @@ all_vars_round_pops <- all_vars %>%
     YouthPop_round = round(YouthPop, 0),
     lt_2x_pov_est_round = round(lt_2x_pov_est,0),
     lep_round = round(acs_lep_pop),
-    u18_round = round(bg_pop18u,0),
-    p75_round = round(bg_pop75p,0),
     disab_round = round(acs_disab_pop,0),
     .keep = c("all")
   )
