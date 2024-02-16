@@ -32,9 +32,10 @@ library(readr)
 ```
 
 ```{r}
-# configuration
-# input_blkgrps_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_bg_af.csv"
-# input_tracts_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_tract_af.csv"
+# ****** configuration - check all these variables before running!!*********
+
+# input_blkgrps_table <- read_csv("\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_bg_af.csv")
+# input_tracts_table <- read_csv("\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\arcpy_outputs\\ebikes_tract_af.csv")
 
 # if you have multiple input geometries, combine them here:
 #
@@ -57,7 +58,9 @@ input_tracts_table <- do.call("rbind", list(
   read_csv(paste0(results_dir, "\\polygons_af_tract.csv"))
 ))
 
-output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\ebikes_results.csv"
+proj_id_field_name <- "CTPS_ID_text"
+
+output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\demographics_output.csv"
 ```
 
 
@@ -135,10 +138,10 @@ acs_pop18u <- c("B01001_001E","B01001_003E","B01001_004E","B01001_005E","B01001_
 
 
 #all acs fields
-acs_fields <- c(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,acs_sr_disab_pop,
-               acs_hh,acs_0veh_hh,acs_low_inc_hh,acs_pop_5p,acs_lep_pop,pov_stat_det_est,
-               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,acs_pop16p,acs_workers16p,
-               acs_workers16p_shr,acs_pop75p,acs_pop18u)
+acs_fields <- c(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,
+               acs_pop_5p,acs_lep_pop,pov_stat_det_est,
+               pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,
+               acs_pop75p,acs_pop18u)
 print("Done.")  
 ```
 
@@ -150,7 +153,7 @@ decennial_yr <- 2020
 
 bg20 <- 
   get_decennial(geography = 'block group', 
-                variables = c('P2_001N', 'P2_003N', # white and minority
+                variables = c('P5_001N', 'P5_003N', # white and minority
                               'P12_001N', 'P12_023N', 'P12_024N', 'P12_025N', 'P12_047N', 
                               'P12_048N', 'P12_049N', # Older adults
                               'P12_003N', 'P12_004N', 'P12_005N', 'P12_006N', 'P12_027N',  
@@ -183,14 +186,17 @@ Calculate counts for Census - total pop and minority pop
 
 ```{r}
 #total population
-bg20$TotalPop <- bg20$P2_001N
+bg20$TotalPop <- bg20$P5_001N
 
 #minority population
-bg20$MinPop <- bg20$TotalPop - bg20$P2_003N
+bg20$MinPop <- bg20$TotalPop - bg20$P5_003N
 
 # Older adults and youth
+#
+# Note: P12_001N and P5_001N are equivalent
 bg20 <- bg20 %>% 
-  mutate(OldPop = sum(P12_001N, P12_023N, P12_024N, P12_025N, P12_047N, 
+  rowwise() %>% 
+  mutate(OldPop = sum(P12_023N, P12_024N, P12_025N, P12_047N, 
                       P12_048N, P12_049N),
          YouthPop = sum(P12_003N, P12_004N, P12_005N, P12_006N, P12_027N,  
                               P12_028N, P12_029N, P12_030N))
@@ -245,17 +251,16 @@ acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B1
                           acstrts$B18101_023E + acstrts$B18101_026E + acstrts$B18101_029E +
                           acstrts$B18101_032E + acstrts$B18101_035E + acstrts$B18101_038E)
 
+acstrts$acs_noninst_pop <- acstrts$B18101_001E
+
 ```
 
 Import the TIP data
 ```{r}
 # tables for each input geometry/census geometry combination
-bg_cen20 <- read_csv(input_blkgrps_table)
+bg_cen20 <- input_blkgrps_table
 
-tract_cen20 <- read_csv(input_tracts_table)
-
-proj_id_field_name <- colnames(input_blkgrps_table)[2]
-
+tract_cen20 <- input_tracts_table
 ```
 
 Join TIP data to demographic data (Block Groups and Tracts)
@@ -282,7 +287,7 @@ bg_cen[is.na(bg_cen)] <- 0
 Apply Area Fraction to BGs and Tracts 
 ```{r}
 #2020 Census
-bg_cen$TotalPop_AF <- round(bg_cen$P2_001N  *  bg_cen$area_fraction)
+bg_cen$TotalPop_AF <- round(bg_cen$P5_001N  *  bg_cen$area_fraction)
 bg_cen$MinPop_AF   <- round(bg_cen$MinPop  *  bg_cen$area_fraction)
 bg_cen$OldPop_AF   <- round(bg_cen$OldPop  *  bg_cen$area_fraction)
 bg_cen$YouthPop_AF   <- round(bg_cen$YouthPop  *  bg_cen$area_fraction)
@@ -299,25 +304,26 @@ bg_acs$acs_pop_5p_AF  <- bg_acs$acs_pop_5p * bg_acs$area_fraction
 bg_acs$acs_lep_pop_AF <- bg_acs$acs_lep_pop * bg_acs$area_fraction
 
 ####ACS AGE AND HH#####
-bg_acs$bg_pop75p_AF <- bg_acs$bg_pop75p * bg_acs$area_fraction
-bg_acs$bg_pop18u_AF <- bg_acs$bg_pop18u * bg_acs$area_fraction
 bg_acs$bg_totpop_AF <- bg_acs$bg_totpop * bg_acs$area_fraction
 
 
 #2022 ACS - Tracts
-tract_acs$acs_disab_pop_AF      <- tract_acs$acs_disab_pop * tract_acs$area_fraction
+tract_acs$acs_disab_pop_AF <- tract_acs$acs_disab_pop * tract_acs$area_fraction
+tract_acs$acs_noninst_pop_AF <- tract_acs$acs_noninst_pop * tract_acs$area_fraction
 
 ```
 
 
 Sum by Project
 ```{r}
-buf_bg_cen <- bg_cen %>% group_by_at(proj_id_field_name) %>% summarise(
-  TotalPop = sum(TotalPop_AF),
-  MinPop = sum(MinPop_AF),
-  OldPop = sum(OldPop_AF),
-  YouthPop = sum(YouthPop_AF),
-)
+buf_bg_cen <- bg_cen %>% 
+  group_by_at(proj_id_field_name) %>% 
+  summarise(
+    TotalPop = sum(TotalPop_AF),
+    MinPop = sum(MinPop_AF),
+    OldPop = sum(OldPop_AF),
+    YouthPop = sum(YouthPop_AF)
+  )
 
 
 buf_bg_acs <- bg_acs %>% group_by_at(proj_id_field_name) %>% summarise(
@@ -326,15 +332,14 @@ buf_bg_acs <- bg_acs %>% group_by_at(proj_id_field_name) %>% summarise(
   lt_2x_pov_moe = sum(lt_2x_pov_moe_AF),
   acs_pop_5p = sum(acs_pop_5p_AF),
   acs_lep_pop = sum(acs_lep_pop_AF),
-  bg_pop75p = sum(bg_pop75p_AF),
-  bg_pop18u = sum(bg_pop18u_AF),
   bg_totpop = sum(bg_totpop_AF)
 )
 
 
 buf_tract_acs <- tract_acs %>% 
   group_by_at(proj_id_field_name) %>% 
-  summarise(acs_disab_pop = sum(acs_disab_pop_AF))
+  summarise(acs_disab_pop = sum(acs_disab_pop_AF),
+            acs_noninst_pop = sum(acs_noninst_pop_AF))
 
 ```
 
@@ -354,10 +359,21 @@ buf_tract_acs$disab_perc <- round(buf_tract_acs$acs_disab_pop / buf_tract_acs$ac
 
 ```
 
+Import MPO totals
+```{r}
+mpo_totals <- read_csv("\\Users\\sstrumwasser.AD\\Documents\\GitHub\\TIP_Demographics\\mpo_pops.csv")
+```
+
+
 Export file
 ```{r}
+# merge all block group tables
 buf_bg <- merge(buf_bg_acs, buf_bg_cen, by=proj_id_field_name)
+
+# merge block group tables with tract table
 all_vars <- merge(buf_bg, buf_tract_acs, by=proj_id_field_name)
+
+# round values
 all_vars_round_pops <- all_vars %>%
   mutate(
     MinPop_round = round(MinPop,0),
@@ -410,8 +426,37 @@ write.csv(final, output_table)
 # qc
 all_bgs <- read.csv(input_blkgrps_table)
 bg_cen_qc <- merge(all_bgs %>% select(geoid), bg20, by.x ='geoid', by.y ='GEOID')
-sum_test <- sum(bg_cen_qc$P2_001N)
+sum_test <- sum(bg_cen_qc$P5_001N)
 # write.csv(bg_cen_qc, "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\charging_stations_half_mile_equity_qc.csv")
 ```
+
+State totals for demographics project
+```{r}
+cen_state <- bg20 %>% 
+  ungroup() %>% 
+  summarize(
+    TotalPop = sum(TotalPop),
+    MinPop = sum(MinPop),
+    YouthPop = sum(YouthPop),
+    OldPop = sum(OldPop)
+    )
+
+acs_bg_state <- acsbgs %>% 
+  ungroup() %>% 
+  summarize(
+    low_inc = sum(lt_2x_pov_est),
+    acs_lep_pop = sum(acs_lep_pop)
+  )
+
+acs_tract_state <- acstrts %>% 
+  ungroup() %>% 
+  summarize(
+    acs_disab_pop = sum(acs_disab_pop)
+  )
+
+state_pops <- cbind(cen_state, acs_bg_state, acs_tract_state)
+write_csv(state_pops, "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\statewide_demographics.csv")
+```
+
 
 

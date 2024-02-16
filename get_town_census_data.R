@@ -54,7 +54,7 @@ acs_towns <- get_acs(geography = 'county subdivision', variables = toupper(acs_f
 
 # get decennial data
 bg20_towns <- get_decennial(geography = 'county subdivision', 
-                            variables = c('P2_001N', 'P2_003N', # white and minority
+                            variables = c('P5_001N', 'P5_003N', # all and minority
                                           'P12_001N', 'P12_023N', 'P12_024N', 'P12_025N', 'P12_047N', 
                                           'P12_048N', 'P12_049N', # Older adults
                                           'P12_003N', 'P12_004N', 'P12_005N', 'P12_006N', 'P12_027N',  
@@ -64,11 +64,12 @@ bg20_towns <- get_decennial(geography = 'county subdivision',
                             state = "MA", 
                             output = 'wide')
 
-bg20_towns$MinPop <- bg20_towns$P2_001N - bg20_towns$P2_003N
+bg20_towns$MinPop <- bg20_towns$P5_001N - bg20_towns$P5_003N
 
 # Older adults and youth
 bg20_towns <- bg20_towns %>% 
-  mutate(OldPop = sum(P12_001N, P12_023N, P12_024N, P12_025N, P12_047N, 
+  rowwise() %>% 
+  mutate(OldPop = sum(P12_023N, P12_024N, P12_025N, P12_047N, 
                       P12_048N, P12_049N),
          YouthPop = sum(P12_003N, P12_004N, P12_005N, P12_006N, P12_027N,  
                         P12_028N, P12_029N, P12_030N))
@@ -118,9 +119,9 @@ towns_census <- mpo_towns_table %>%
 # summarise for full mpo
 mpo_stats <- towns_census %>%
   summarise(
-    TotalPop_MPO = sum(P2_001N),
+    TotalPop_MPO = sum(P5_001N),
     MinPop_MPO = sum(MinPop),
-    NonMinPop_MPO = sum(P2_003N),
+    NonMinPop_MPO = sum(P5_003N),
     low_inc_pop_MPO = sum(lt_2x_pov_est),
     lep_pop_MPO = sum(acs_lep_pop),
     disab_pop_MPO = sum(acs_disab_pop),
