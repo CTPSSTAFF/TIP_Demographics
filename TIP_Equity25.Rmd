@@ -42,25 +42,28 @@ library(readr)
 # input_blkgrps_table <- do.call("rbind", list( - BLOCK GROUP TABLES HERE - ))
 # input_tracts_table <- do.call("rbind", list( - TRACT TABLES HERE - ))
 
-results_dir <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\"
+results_dir <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\022624_final"
+
+# input_blkgrps_table <- read_csv(paste0(results_dir, "argilla_road_612738_bg_af.csv"))
+# input_tracts_table <- read_csv(paste0(results_dir, "argilla_road_612738_tract_af.csv"))
 
 input_blkgrps_table <- do.call("rbind", list(
-  read_csv(paste0(results_dir, "\\lines_af_bg_eighth_mi.csv")),
-  read_csv(paste0(results_dir, "\\lines_af_bg_quart_mi.csv")),
-  read_csv(paste0(results_dir, "\\lines_af_bg_half_mi.csv")),
-  read_csv(paste0(results_dir, "\\polygons_af_bg.csv"))
+  read_csv(paste0(results_dir, "\\lines_af_bg_eighth_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_bg_quart_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_bg_half_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\polygons_af_bg_022624.csv"))
 ))
 
 input_tracts_table <- do.call("rbind", list(
-  read_csv(paste0(results_dir, "\\lines_af_tract_eighth_mi.csv")),
-  read_csv(paste0(results_dir, "\\lines_af_tract_quart_mi.csv")),
-  read_csv(paste0(results_dir, "\\lines_af_tract_half_mi.csv")),
-  read_csv(paste0(results_dir, "\\polygons_af_tract.csv"))
+  read_csv(paste0(results_dir, "\\lines_af_tract_eighth_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_tract_quart_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\lines_af_tract_half_mi_022624.csv")),
+  read_csv(paste0(results_dir, "\\polygons_af_tract_022624.csv"))
 ))
 
 proj_id_field_name <- "CTPS_ID_text"
 
-output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\demographics_output.csv"
+output_table <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\demographics_output_022624.csv"
 ```
 
 
@@ -116,6 +119,12 @@ acs_disabled_pop <- c("b18101_004e","b18101_007e","b18101_010e","b18101_013e","b
 # senior disabled
 acs_sr_disab_pop <- c("b18101_016e","b18101_019e","b18101_035e","b18101_038e")
 
+# 0 vehicle hh universe
+acs_tot_hh <- c("b08201_001")
+
+# 0 vehicles households
+acs_0veh_hh <- c("b08201_002")
+
 # lep universe
 acs_pop_5p <- c("b16004_001e")
 
@@ -139,7 +148,7 @@ acs_pop18u <- c("B01001_001E","B01001_003E","B01001_004E","B01001_005E","B01001_
 
 #all acs fields
 acs_fields <- c(acs_noninst_pop,acs_sr_noninst_pop,acs_disabled_pop,
-               acs_pop_5p,acs_lep_pop,pov_stat_det_est,
+               acs_pop_5p,acs_tot_hh, acs_0veh_hh, acs_lep_pop,pov_stat_det_est,
                pov_stat_det_moe,lt_2x_pov_est,lt_2x_pov_moe,
                acs_pop75p,acs_pop18u)
 print("Done.")  
@@ -161,7 +170,8 @@ bg20 <-
                 year = decennial_yr, 
                 sumfile = "dhc", 
                 state = "MA", 
-                output = 'wide')
+                output = 'wide',
+                cache_table = TRUE)
 ```
 ACS
 ```{r}
@@ -172,13 +182,15 @@ acsbgs <- get_acs(geography = 'block group',
                   variables = toupper(acs_fields), 
                   year = acs_yr, 
                   state = "MA", 
-                  output = 'wide')
+                  output = 'wide',
+                  cache_table = TRUE)
 # download tract geography and demographic data
 acstrts <- get_acs(geography = 'tract', 
                    variables = toupper(acs_fields), 
                    year = acs_yr, 
                    state = "MA", 
-                   output = 'wide')
+                   output = 'wide',
+                   cache_table = TRUE)
 
 ```
 
@@ -230,32 +242,42 @@ acstrts$acs_disab_pop <- (acstrts$B18101_004E + acstrts$B18101_007E + acstrts$B1
 
 acstrts$acs_noninst_pop <- acstrts$B18101_001E
 
+acstrts$acs_tot_hh <- acstrts$B08201_001E
+acstrts$acs_0veh_hh <- acstrts$B08201_002E
+
 ```
 
 Import the TIP data
 ```{r}
 # tables for each input geometry/census geometry combination
-bg_cen20 <- input_blkgrps_table
+tip_bg <- input_blkgrps_table
 
-tract_cen20 <- input_tracts_table
+tip_tract <- input_tracts_table
 ```
 
 Join TIP data to demographic data (Block Groups and Tracts)
 ```{r}
 
-bg_acs <- merge(bg_cen20 %>% 
-                  select(geoid, area_fraction, all_of(proj_id_field_name)), acsbgs, 
-                  by.x =char('geoid'), by.y ='GEOID')
+bg_acs <- merge(tip_bg %>% select(geoid, area_fraction, all_of(proj_id_field_name)), 
+                acsbgs, 
+                by.x =char('geoid'), 
+                by.y ='GEOID',
+                all.x = TRUE)
+
 bg_acs[is.na(bg_acs)] <- 0
 
-tract_acs <- merge(tract_cen20 %>% 
-                     select(geoid, area_fraction, all_of(proj_id_field_name)), acstrts, 
-                     by.x ='geoid', by.y ='GEOID')
+tract_acs <- merge(tip_tract %>% select(geoid, area_fraction, all_of(proj_id_field_name)),
+                   acstrts, 
+                   by.x ='geoid', 
+                   by.y ='GEOID')
+
 tract_acs[is.na(tract_acs)] <- 0
 
-bg_cen <- merge(bg_cen20 %>% 
-                  select(geoid, area_fraction, all_of(proj_id_field_name)), bg20, by.x ='geoid', 
-                  by.y ='GEOID')
+bg_cen <- merge(tip_bg %>% select(geoid, area_fraction, all_of(proj_id_field_name)), 
+                bg20, 
+                by.x ='geoid', 
+                by.y ='GEOID')
+
 bg_cen[is.na(bg_cen)] <- 0
 
 ```
@@ -279,8 +301,13 @@ bg_acs$acs_pop_5p_AF  <- bg_acs$acs_pop_5p * bg_acs$area_fraction
 bg_acs$acs_lep_pop_AF <- bg_acs$acs_lep_pop * bg_acs$area_fraction
 
 #2022 ACS - Tracts
+# disabled
 tract_acs$acs_disab_pop_AF <- tract_acs$acs_disab_pop * tract_acs$area_fraction
 tract_acs$acs_noninst_pop_AF <- tract_acs$acs_noninst_pop * tract_acs$area_fraction
+
+# 0 vehicle households
+tract_acs$acs_tot_hh_AF <- tract_acs$acs_tot_hh * tract_acs$area_fraction
+tract_acs$acs_0veh_hh_AF <- tract_acs$acs_0veh_hh * tract_acs$area_fraction
 
 ```
 
@@ -310,7 +337,9 @@ buf_bg_acs <- bg_acs %>%
 buf_tract_acs <- tract_acs %>% 
   group_by_at(proj_id_field_name) %>% 
   summarise(acs_disab_pop = sum(acs_disab_pop_AF),
-            acs_noninst_pop = sum(acs_noninst_pop_AF))
+            acs_noninst_pop = sum(acs_noninst_pop_AF),
+            acs_tot_hh = sum(acs_tot_hh_AF),
+            acs_0veh_hh = sum(acs_0veh_hh_AF))
 
 ```
 
@@ -335,11 +364,9 @@ buf_bg_acs$lep_perc <- round(buf_bg_acs$acs_lep_pop / buf_bg_acs$acs_pop_5p,2)
 # disabled
 buf_tract_acs$disab_perc <- round(buf_tract_acs$acs_disab_pop / buf_tract_acs$acs_noninst_pop,2)
 
-```
+# 0 vehicle households
+buf_tract_acs$zero_veh_hh_perc <- round(buf_tract_acs$acs_0veh_hh / buf_tract_acs$acs_tot_hh,2)
 
-Import MPO totals
-```{r}
-mpo_totals <- read_csv("\\Users\\sstrumwasser.AD\\Documents\\GitHub\\TIP_Demographics\\mpo_pops.csv")
 ```
 
 
@@ -354,22 +381,24 @@ all_vars <- merge(buf_bg, buf_tract_acs, by=proj_id_field_name)
 # round values
 all_vars_round_pops <- all_vars %>%
   mutate(
-    MinPop_round = round(MinPop,0),
-    TotalPop_round = round(TotalPop,0),
+    MinPop_round = round(MinPop, 0),
+    TotalPop_round = round(TotalPop, 0),
     OldPop_round = round(OldPop, 0),
     YouthPop_round = round(YouthPop, 0),
     pov_stat_det_est_round = round(pov_stat_det_est, 0),
-    lt_2x_pov_est_round = round(lt_2x_pov_est,0),
+    lt_2x_pov_est_round = round(lt_2x_pov_est, 0),
     pop_5p_round = round(acs_pop_5p, 0),
     lep_round = round(acs_lep_pop),
     noninst_pop_round = round(acs_noninst_pop, 0),
-    disab_round = round(acs_disab_pop,0),
+    disab_round = round(acs_disab_pop, 0),
+    tot_hh_round = round(acs_tot_hh, 0),
+    zero_veh_hh_round = round(acs_0veh_hh, 0),
     .keep = c("all")
   )
 
 
 final <- all_vars_round_pops %>% select(
-  "CTPS_ID" = all_of(proj_id_field_name),
+  proj_id_field_name = all_of(proj_id_field_name),
   "Minority_universe" = TotalPop_round,
   "Minority_population" = MinPop_round,
   "Minority_percent" = MinPerc,
@@ -387,7 +416,10 @@ final <- all_vars_round_pops %>% select(
   "LEP_percent" = lep_perc,
   "Disabled_universe" = noninst_pop_round,
   "Disabled_population" = disab_round,
-  "Disabled_percent" = disab_perc
+  "Disabled_percent" = disab_perc,
+  "Zero_vehicle_households_universe" = tot_hh_round,
+  "Zero_vehicle_households" = zero_veh_hh_round,
+  "Zero_vehicle_households_percent" = zero_veh_hh_perc
   )
 
 write.csv(final, output_table)
@@ -396,38 +428,38 @@ write.csv(final, output_table)
 
 ```{r}
 # qc
-all_bgs <- read.csv(input_blkgrps_table)
-bg_cen_qc <- merge(all_bgs %>% select(geoid), bg20, by.x ='geoid', by.y ='GEOID')
-sum_test <- sum(bg_cen_qc$P5_001N)
+# all_bgs <- read.csv(input_blkgrps_table)
+# bg_cen_qc <- merge(all_bgs %>% select(geoid), bg20, by.x ='geoid', by.y ='GEOID')
+# sum_test <- sum(bg_cen_qc$P5_001N)
 # write.csv(bg_cen_qc, "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\needs_assessment_proximity\\R_outputs\\charging_stations_half_mile_equity_qc.csv")
 ```
 
 State totals for demographics project
 ```{r}
-cen_state <- bg20 %>% 
-  ungroup() %>% 
-  summarize(
-    TotalPop = sum(TotalPop),
-    MinPop = sum(MinPop),
-    YouthPop = sum(YouthPop),
-    OldPop = sum(OldPop)
-    )
-
-acs_bg_state <- acsbgs %>% 
-  ungroup() %>% 
-  summarize(
-    low_inc = sum(lt_2x_pov_est),
-    acs_lep_pop = sum(acs_lep_pop)
-  )
-
-acs_tract_state <- acstrts %>% 
-  ungroup() %>% 
-  summarize(
-    acs_disab_pop = sum(acs_disab_pop)
-  )
-
-state_pops <- cbind(cen_state, acs_bg_state, acs_tract_state)
-write_csv(state_pops, "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\statewide_demographics.csv")
+# cen_state <- bg20 %>% 
+#   ungroup() %>% 
+#   summarize(
+#     TotalPop = sum(TotalPop),
+#     MinPop = sum(MinPop),
+#     YouthPop = sum(YouthPop),
+#     OldPop = sum(OldPop)
+#     )
+# 
+# acs_bg_state <- acsbgs %>% 
+#   ungroup() %>% 
+#   summarize(
+#     low_inc = sum(lt_2x_pov_est),
+#     acs_lep_pop = sum(acs_lep_pop)
+#   )
+# 
+# acs_tract_state <- acstrts %>% 
+#   ungroup() %>% 
+#   summarize(
+#     acs_disab_pop = sum(acs_disab_pop)
+#   )
+# 
+# state_pops <- cbind(cen_state, acs_bg_state, acs_tract_state)
+# write_csv(state_pops, "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\statewide_demographics.csv")
 ```
 
 
