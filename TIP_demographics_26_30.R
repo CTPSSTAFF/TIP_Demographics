@@ -11,11 +11,42 @@
 library(tidyverse)
 
 # Load data
-home_dir <- "C:\\Users\\sstrumwasser\\Documents\\ArcGIS\\Projects\\TIP_Demographics\\data"
-bg_af <- read_csv(paste0(home_dir, "\\out_bgs.csv"))
-tracts_af <- read_csv(paste0(home_dir, "\\out_tracts.csv"))
-bg_demos <- read_csv(paste0(home_dir, "\\bg_demos.csv"))
-tract_demos <- read_csv(paste0(home_dir, "\\tract_demos.csv"))
+home_dir <- "C:\\Users\\sstrumwasser\\Documents\\ArcGIS\\Projects\\TIP_Demographics\\results\\26_30"
+
+bg_af <- rbind(
+  read_csv(paste0(home_dir, "\\lines_eighth_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\lines_quart_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\mbta_bus_quart_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\lines_half_mi_bg.csv")) %>% filter(PROJIS != 'S13155'),
+  read_csv(paste0(home_dir, "\\added_half_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\S12977_half_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\S13155_half_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\S13200_half_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\added_022025_half_mi_bg.csv")),
+  read_csv(paste0(home_dir, "\\polygon_bg.csv"))
+) %>% 
+  filter(!is.na(geoid))
+
+tracts_af <- rbind(
+  read_csv(paste0(home_dir, "\\lines_eighth_mi_tracts.csv")),
+  read_csv(paste0(home_dir, "\\lines_quart_mi_tracts.csv")),
+  read_csv(paste0(home_dir, "\\mbta_bus_quart_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\lines_half_mi_tracts.csv")) %>% filter(PROJIS != 'S13155'),
+  read_csv(paste0(home_dir, "\\added_half_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\S12977_half_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\S13155_half_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\S13200_half_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\added_022025_half_mi_tract.csv")),
+  read_csv(paste0(home_dir, "\\polygon_tracts.csv"))
+) %>% 
+  filter(!is.na(geoid))
+
+bg_demos <- read_csv(paste0(home_dir, "\\..\\..\\data\\bg_demos.csv")) %>% 
+  mutate_if(is.numeric, replace_na, 0) %>%  
+  mutate_if(is.character, replace_na, "")  # replace NAs with 0s
+tract_demos <- read_csv(paste0(home_dir, "\\..\\..\\data\\tract_demos.csv")) %>% 
+  mutate_if(is.numeric, replace_na, 0) %>%  
+  mutate_if(is.character, replace_na, "")  # replace NAs with 0s
 
 bg_joined <- bg_af %>% 
   left_join(bg_demos, by=join_by("geoid" == "GEOID"))
@@ -89,30 +120,30 @@ tract_pops <- tracts_joined %>%
 bg_project_sums <- bg_pops %>% 
   group_by(PROJIS) %>% 
   summarise(
-    minority_universe = sum(minority_universe_af),
-    minority_pop = sum(minority_pop_af),
+    minority_universe = sum(minority_universe_af, na.rm = TRUE),
+    minority_pop = sum(minority_pop_af, na.rm = TRUE),
 
-    older_adults_universe = sum(older_adults_universe_af),
-    older_adults_pop = sum(older_adults_pop_af),
+    older_adults_universe = sum(older_adults_universe_af, na.rm = TRUE),
+    older_adults_pop = sum(older_adults_pop_af, na.rm = TRUE),
 
-    youth_universe = sum(youth_universe_af),
-    youth_pop = sum(youth_pop_af),
+    youth_universe = sum(youth_universe_af, na.rm = TRUE),
+    youth_pop = sum(youth_pop_af, na.rm = TRUE),
 
-    lowincome_universe = sum(lowincome_universe_af),
-    lowincome_pop = sum(lowincome_pop_af),
+    lowincome_universe = sum(lowincome_universe_af, na.rm = TRUE),
+    lowincome_pop = sum(lowincome_pop_af, na.rm = TRUE),
 
-    lep_universe = sum(lep_universe_af),
-    lep_pop = sum(lep_pop_af)
+    lep_universe = sum(lep_universe_af, na.rm = TRUE),
+    lep_pop = sum(lep_pop_af, na.rm = TRUE)
   )
 
 tract_project_sums <- tract_pops %>% 
   group_by(PROJIS) %>% 
   summarise(
-    disabled_universe = sum(disabled_universe_af),
-    disabled_pop = sum(disabled_pop_af),
+    disabled_universe = sum(disabled_universe_af, na.rm = TRUE),
+    disabled_pop = sum(disabled_pop_af, na.rm = TRUE),
     
-    zero_vhh_universe = sum(zero_vhh_universe_af),
-    zero_vhh = sum(zero_vhh_af)
+    zero_vhh_universe = sum(zero_vhh_universe_af, na.rm = TRUE),
+    zero_vhh = sum(zero_vhh_af, na.rm = TRUE)
   )
 
 # Combine tract and bg tables
@@ -148,11 +179,16 @@ out_table <- all_project_sums %>%
     lep_pct,
     disabled_universe,
     disabled_pop,
-    disabled_pct,
-    zero_vhh_universe,
-    zero_vhh,
-    zero_vhh_pct
+    disabled_pct
+    # zero_vhh_universe,
+    # zero_vhh,
+    # zero_vhh_pct
   )
 
+
 # Write out results
-write_csv(out_table, paste0(home_dir, "\\results_test.csv"))
+write_csv(out_table, "J:\\Shared drives\\MPO_Activities\\Transportation Equity\\TIP\\FFY2026-30 TIP Development\\Project Scoring\\demographics.csv")
+
+
+# s12977 <- out_table %>% filter(PROJIS == 'S12977')
+# write_csv(s12977, "J:\\Shared drives\\MPO_Activities\\Transportation Equity\\TIP\\FFY2026-30 TIP Development\\Project Scoring\\s12977.csv")
