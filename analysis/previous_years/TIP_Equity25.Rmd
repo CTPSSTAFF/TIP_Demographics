@@ -42,7 +42,7 @@ library(readr)
 # input_blkgrps_table <- do.call("rbind", list( - BLOCK GROUP TABLES HERE - ))
 # input_tracts_table <- do.call("rbind", list( - TRACT TABLES HERE - ))
 
-results_dir <- "\\Users\\sstrumwasser.AD\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\022624_final"
+results_dir <- "C:\\Users\\sstrumwasser\\Documents\\ArcGIS\\Projects\\TIP_25_29\\results\\022624_final"
 
 # input_blkgrps_table <- read_csv(paste0(results_dir, "argilla_road_612738_bg_af.csv"))
 # input_tracts_table <- read_csv(paste0(results_dir, "argilla_road_612738_tract_af.csv"))
