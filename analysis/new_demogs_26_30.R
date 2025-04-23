@@ -8,9 +8,9 @@ library(sf)
 # 4. percent of population of tracts served that is in a tract in each category
 
 # testing
-tracts_af <- af
-tracts_demog <- pti
-project_info <- read_csv("./data/final_scenario.csv")
+# tracts_af <- af
+# tracts_demog <- demogs
+# project_info <- read_csv("./data/final_scenario.csv")
 
 #' Calculate PTI table
 #'
@@ -29,9 +29,11 @@ calc_pti_table <- function(tracts_af, project_info, tracts_demog) {
   # Join investment program information to af tables
   tracts_af_with_types <- tracts_af %>% 
     left_join(project_info, by = join_by("PROJIS" == "Project ID")) %>% 
-    select(PROJIS, geoid, area_fraction, project_type = `Investment Category`)
+    select(PROJIS, geoid, area_fraction, project_type = `Investment Category`) %>% 
+    group_by(project_type, geoid) %>% # eliminate duplicate tracts so they are not double counted
+    summarize()
   
-  # Join demographics to af tables
+  # Join demographics to af tables - these are the demographics for each census tract
   tracts_joined <- tracts_af_with_types %>% 
     left_join(tracts_demog %>% 
                 select(
@@ -49,13 +51,13 @@ calc_pti_table <- function(tracts_af, project_info, tracts_demog) {
   
   # number of served tracts and population by investment program and category
   by_category <- tracts_joined %>% 
-    group_by(project_type, tot_exceed) %>% 
+    group_by(project_type, tot_exceed) %>% # project_type is the column with investment program
     summarize(
       tracts = n(),
       pop = sum(total_pop_)
     )
   
-  # total tracts served and total pop for each category-program combo
+  # total tracts served and total pop for each program - used as denominator in next step
   total <- tracts_joined %>% 
     group_by(project_type) %>% 
     summarize(
@@ -74,11 +76,11 @@ calc_pti_table <- function(tracts_af, project_info, tracts_demog) {
     )
   
   # get stats for each category - across all projects
-  all_projects <- joined %>% 
+  all_projects <- tracts_joined %>% 
     group_by(tot_exceed) %>% 
     summarize(
-      total_tracts = sum(tracts),
-      total_pop = sum(pop)
+      total_tracts = n(),
+      total_pop = sum(total_pop_)
     ) %>% 
     mutate(
       total_tracts_denom = sum(total_tracts),
@@ -88,7 +90,7 @@ calc_pti_table <- function(tracts_af, project_info, tracts_demog) {
     ) %>% 
     select(-total_tracts_denom, -total_pop_denom)
   
-  # add dummy rows
+  # add dummy rows - need to have a row for each investment program and category (0 through 6)
   all_combos <- data.frame(
     project_type = c(
       rep("BP", 7), 
@@ -104,9 +106,10 @@ calc_pti_table <- function(tracts_af, project_info, tracts_demog) {
   final <- all_combos %>% 
     left_join(by_investment_prg, by = c("project_type", "tot_exceed"))
   
+  # replace NAs with 0s
   final[is.na(final)] = 0
   
-  return(final)
+  return(list(final, all_projects))
 }
 
 

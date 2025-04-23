@@ -5,7 +5,8 @@ source("./analysis/new_demogs_26_30.R")
 # Rather than try to collect old area fractions and worry about crosswalking 
 # CTPS and PROJIS IDs, I decided to just run the full set of final scenario
 # projects through the network buffer analysis again to generate area fractions
-# using the correct PROJIS IDs.
+# using the correct PROJIS IDs. And we don't actually need area fractions, just the
+# list of GEOIDs of tracts that the are in each project's buffer.
 
 home_dir <- "C:\\Users\\sstrumwasser\\Documents\\ArcGIS\\Projects\\TIP_Demographics\\results\\26_30\\final_scenario"
 
@@ -16,8 +17,11 @@ af <- rbind(
   read_csv(paste0(home_dir, "\\S13292_half_mi_tract.csv")),
   read_csv(paste0(home_dir, "\\S13292_half_mi_tract.csv")) %>% 
     mutate(PROJIS = "S13152"),
-  read_csv(paste0(home_dir, "\\mbta_bus_quart_mi_tract.csv")) %>% 
-    mutate(PROJIS = "S13153"), # update to new PROJIS - doing it here for documentation
+  
+  # Removing mbta bus priority project for PTI calculation as it covers a large portion of the region
+  # read_csv(paste0(home_dir, "\\mbta_bus_quart_mi_tract.csv")) %>% 
+  #   mutate(PROJIS = "S13153"), # update to new PROJIS - doing it here for documentation
+  
   read_csv(paste0(home_dir, "\\polygons_tract.csv"))
 ) %>% 
   filter(!is.na(geoid)) %>% 
@@ -39,6 +43,9 @@ project_info <- read_csv("./data/final_scenario.csv")
 #   left_join(af_projects, by = "PROJIS", keep = T)
 
 results <- calc_pti_table(af, project_info, demogs)
+by_program <- results[[1]]
+all_projects <- results[[2]]
 
-write_csv(results, "J:\\Shared drives\\MPO_Activities\\Transportation Equity\\TIP\\FFY2026-30 TIP Development\\Project Scoring\\PTI_by_investment_program.csv")
+write_csv(by_program, "J:\\Shared drives\\MPO_Activities\\Transportation Equity\\TIP\\FFY2026-30 TIP Development\\Project Scoring\\PTI_by_investment_program_no_overlapping_no_mbta.csv")
+write_csv(all_projects, "J:\\Shared drives\\MPO_Activities\\Transportation Equity\\TIP\\FFY2026-30 TIP Development\\Project Scoring\\PTI_all_projects.csv")
 
