@@ -15,9 +15,9 @@ get_demogs <- function(bg_af, tract_af, bg_census, tract_census) {
 
   
   bg_joined <- bg_af %>% 
-    left_join(bg_census, by=join_by("geoid" == "GEOID"))
-  tracts_joined <- tracts_af %>% 
-    left_join(tract_census, by=join_by("geoid" == "GEOID"))
+    left_join(bg_census, by="GEOID")
+  tracts_joined <- tract_af %>% 
+    left_join(tract_census, by="GEOID")
   
   
   # Apply area fraction ----
@@ -42,7 +42,7 @@ get_demogs <- function(bg_af, tract_af, bg_census, tract_census) {
     ) %>% 
     select(
       PROJIS,
-      geoid,
+      GEOID,
       
       minority_universe_af,
       minority_pop_af,
@@ -72,7 +72,7 @@ get_demogs <- function(bg_af, tract_af, bg_census, tract_census) {
     ) %>% 
     select(
       PROJIS,
-      geoid,
+      GEOID,
       
       disabled_universe_af,
       disabled_pop_af,
@@ -118,13 +118,13 @@ get_demogs <- function(bg_af, tract_af, bg_census, tract_census) {
   # Calculate percentages
   out_table <- all_project_sums %>% 
     mutate(
-      minority_pct =     round(minority_pop / minority_universe, 2),
-      older_adults_pct = round(older_adults_pop / older_adults_universe, 2),
-      youth_pct =        round(youth_pop / youth_universe, 2),
-      lowincome_pct =    round(lowincome_pop / lowincome_universe, 2),
-      lep_pct =          round(lep_pop / lep_universe, 2),
-      disabled_pct =     round(disabled_pop / disabled_universe, 2),
-      zero_vhh_pct =     round(zero_vhh / zero_vhh_universe, 2),
+      minority_pct =     round(minority_pop / minority_universe * 100, 1),
+      older_adults_pct = round(older_adults_pop / older_adults_universe * 100, 1),
+      youth_pct =        round(youth_pop / youth_universe * 100, 1),
+      lowincome_pct =    round(lowincome_pop / lowincome_universe * 100, 1),
+      lep_pct =          round(lep_pop / lep_universe * 100, 1),
+      disabled_pct =     round(disabled_pop / disabled_universe * 100, 1),
+      zero_vhh_pct =     round(zero_vhh / zero_vhh_universe * 100, 1),
     ) %>% 
     select(
       PROJIS,

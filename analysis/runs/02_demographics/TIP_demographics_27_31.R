@@ -42,7 +42,7 @@ tract_census <- read_csv(paste0(brmpo_demo_acs_23, "/brmpo_demographics_tract.cs
 #   mutate_if(is.character, replace_na, "")  # replace NAs with 0s
 
 
-get_demogs(bg_af = bg_af, 
+output <- get_demogs(bg_af = bg_af, 
            tract_af = tract_af, 
            bg_census = bg_census, 
            tract_census = tract_census)

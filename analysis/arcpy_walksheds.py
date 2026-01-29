@@ -59,7 +59,7 @@ def duration(start_time, print_time=True):
     return duration_string
 
 
-def main(input_points, project_id_field, network_dataset,
+def main(input_points, project_id_field, solver_object, network_dataset,
                demo_geometry_feat, output_tables, gdb,
          output_to_map=False,
          network_step=True,
@@ -97,24 +97,27 @@ def main(input_points, project_id_field, network_dataset,
 
     if network_step:
 
-        # Add project ID field to points so that output line of service area have the right names (not just 'Location ###')
-        arcpy.AddMessage(f"Adding project ID field ({project_id_field}) to input points...")
-        arcpy.AddField_management(input_points, field_name=project_id_field, field_type='TEXT')
-        arcpy.CalculateField_management(in_table=input_points,
-                                        field=project_id_field,
-                                        expression=f"'{project_id_field}'",
-                                        expression_type='PYTHON3')
+        # If all buffers should be dissolved together:
+        if project_id_field_blank:
+            # Add project ID field to points so that output line of service area have the right names (not just 'Location ###')
+            arcpy.AddMessage(f"Adding project ID field ({project_id_field}) to input points...")
+            arcpy.AddField_management(input_points, field_name=project_id_field, field_type='TEXT')
+            arcpy.CalculateField_management(in_table=input_points,
+                                            field=project_id_field,
+                                            expression=f"'{project_id_field}'",
+                                            expression_type='PYTHON3')
 
         # 4a: Add project vertices as locations to Service Area Analysis Layer
         # Note: projects with no ID with lead to a series of vertices named "Location 1", "Location 2", and so on.
         # This creates many output features because they do not dissolve.
         arcpy.AddMessage("4. Adding project vertices as Locations...")
 
+        # Map the project ID field to the "Name" property of the Facilities layer
+        print(project_id_field)
         arcpy.na.AddLocations(in_network_analysis_layer='project_service_area',
                              sub_layer='Facilities',
                              in_table=input_points,
-                             field_mappings="Name " + project_id_field + " #")
-
+                             field_mappings=f"Name {project_id_field} #")
 
         # 5a: Run Service Area Analysis (Solve)
         arcpy.AddMessage("5. Solving Service Area Layer...")
@@ -127,7 +130,6 @@ def main(input_points, project_id_field, network_dataset,
         arcpy.CopyFeatures_management('project_service_area\Facilities', 'SA_Facilities')
         input_buf_lyr = 'input_buf_lyr'
         arcpy.MakeFeatureLayer_management(gdb + r'\input_buf', input_buf_lyr)
-
 
         # 7: Join Facilities layer to input_buf on project_ID
         arcpy.AddMessage("7. Joining Facilities to input_buf...")
@@ -416,7 +418,7 @@ def ScriptTool(input_features, gdb, project_id_field, cutoffs, network_dataset,
             # Step 1: Make Service Area Analysis Layer
             arcpy.AddMessage("1. Making Service Area Layer...")
 
-            arcpy.na.MakeServiceAreaAnalysisLayer(network_data_source=network_dataset + r'\CTPS_RI2018On_ND',
+            solver_object = arcpy.na.MakeServiceAreaAnalysisLayer(network_data_source=network_dataset + r'\CTPS_RI2018On_ND',
                                                   layer_name='project_service_area',
                                                   travel_mode='Pedestrian',
                                                   cutoffs=cutoffs,
@@ -455,6 +457,7 @@ def ScriptTool(input_features, gdb, project_id_field, cutoffs, network_dataset,
         # FROM HERE ON, POINTS AND LINES ARE IDENTICAL
         main(input_points=input_points,
              project_id_field=project_id_field,
+             solver_object=solver_object,
              network_dataset=network_dataset,
              demo_geometry_feat=demo_geometry_feat,
              output_tables=output_tables,
