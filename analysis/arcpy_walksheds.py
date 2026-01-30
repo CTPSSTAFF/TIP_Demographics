@@ -36,6 +36,12 @@ def new_gdb(dir, name):
         return path
 
 
+def print_rows(layer, fields='*'):
+    with arcpy.da.SearchCursor(layer, fields) as cursor:
+        for row in cursor:
+            print(row)
+
+
 def duration(start_time, print_time=True):
     """
     Get the amount of time passed since start_time.
@@ -399,7 +405,7 @@ def main(input_points, project_id_field, solver_object, network_dataset,
 def ScriptTool(input_features, gdb, project_id_field, cutoffs, network_dataset,
                demo_geometry_feat, output_tables, output_to_map='false', network_step=True, census_step=True,
                input_poly_buf='', input_network_poly_buf=''):
-
+    print('gdb', gdb)
     # gdb = arcpy.env.workspace # using parameter now
 
     # check input geometry

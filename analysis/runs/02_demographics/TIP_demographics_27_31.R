@@ -16,12 +16,16 @@ source("analysis\\demographics.R")
 home_dir <- "data\\27_31\\outputs"
 
 bg_af <- rbind(
-  read_csv(paste0(home_dir, "\\rescore_projects_blockgroup_AF.csv"))
+  read_csv(paste0(home_dir, "\\point_half_mi_blockgroup_AF.csv")),
+  read_csv(paste0(home_dir, "\\point_quarter_mi_blockgroup_AF.csv")),
+  read_csv(paste0(home_dir, "\\lines_half_mi_blockgroup_AF.csv"))
 ) %>% 
   filter(!is.na(GEOID))
 
 tract_af <- rbind(
-  read_csv(paste0(home_dir, "\\rescore_projects_tract_AF.csv"))
+  read_csv(paste0(home_dir, "\\point_half_mi_tract_AF.csv")),
+  read_csv(paste0(home_dir, "\\point_quarter_mi_tract_AF.csv")),
+  read_csv(paste0(home_dir, "\\lines_half_mi_tract_AF.csv"))
 ) %>% 
   filter(!is.na(GEOID))
 
@@ -42,10 +46,16 @@ tract_census <- read_csv(paste0(brmpo_demo_acs_23, "/brmpo_demographics_tract.cs
 #   mutate_if(is.character, replace_na, "")  # replace NAs with 0s
 
 
-output <- get_demogs(bg_af = bg_af, 
-           tract_af = tract_af, 
-           bg_census = bg_census, 
-           tract_census = tract_census)
+output_rescore <- get_demogs(bg_af = read_csv(paste0(home_dir, "\\rescore_projects_blockgroup_AF.csv")), 
+                             tract_af = read_csv(paste0(home_dir, "\\rescore_projects_tract_AF.csv")), 
+                             bg_census = bg_census, 
+                             tract_census = tract_census)
+write_csv(output_rescore, "J:\\Shared drives\\Projects\\Transportation Equity\\TIP\\FFY2027-31 TIP Development\\Project Scoring\\demographics\\rescore_projects.csv")
+
+output_new <- get_demogs(bg_af = bg_af, 
+                             tract_af = tract_af, 
+                             bg_census = bg_census, 
+                             tract_census = tract_census)
 
 
 
