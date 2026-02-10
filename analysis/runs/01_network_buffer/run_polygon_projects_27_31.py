@@ -8,14 +8,16 @@ import datetime
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.append(parent_dir)
-from arcpy_walksheds import ScriptTool, new_gdb, duration
+from arcpy_walksheds import new_gdb, duration
+from arcpy_walksheds_polygons import polygon_analysis
 
 arcpy.env.overwriteOutput = True
 
 
 home_dir = os.getenv('USERPROFILE') + r'\Documents\GitHub\TIP_Demographics'
-rescore_projects = home_dir + r'\data\27_31\gdbs\rescore_projects.gdb\rescore_projects'
-gdb = new_gdb(home_dir + r'\data\27_31\gdbs', 'rescore_projects.gdb')
+polygon_projects = home_dir + r'\data\27_31\gdbs\polygons.gdb\polygon_projects'
+test_project = home_dir + r'\data\27_31\gdbs\polygons.gdb\test'
+gdb = new_gdb(home_dir + r'\data\27_31\gdbs', 'polygons.gdb')
 
 start_time = time.time()
 # now = datetime.datetime.now()
@@ -23,22 +25,20 @@ start_time = time.time()
 # sys.stdout = open(home_dir + r'\logs\arcpy_network_buffer' + date_time_str + '.txt', 'w')
 # sys.stderr = open(home_dir + r'\logs\arcpy_network_buffer' + date_time_str + '_errors.txt', 'w')
 
-ScriptTool(
-    input_features=rescore_projects,
+polygon_analysis(
+    # input_polygons=polygon_projects,
+    input_polygons=test_project,
     project_id_field='PROJIS',
-    network_dataset=os.getenv('USERPROFILE') + r'\Documents\ArcGIS\Projects\TIP_Demographics\RI_ND_copy.gdb\CTPS_RoadInv2018On_DS',
+    network_segments=os.getenv('USERPROFILE') + r'\Documents\ArcGIS\Projects\TIP_Demographics\RI_ND_copy.gdb\CTPS_RoadInv2018On_DS\CTPS_RoadInv2018On_Segments',
     demo_geometry_feat={
         home_dir + r'\data\27_31\inputs\census\brmpo_blockgroup.shp': ['GEOID', 'bg'],
         home_dir + r'\data\27_31\inputs\census\brmpo_tract.shp': ['GEOID', 'tract']
     },
-    cutoffs=0.5, # rescore projects are all 1/2 mile (see "Project buffers_rescore.csv")
     output_tables=[
-        home_dir + r'\data\27_31\outputs\rescore_projects_blockgroup_AF.csv',
-        home_dir + r'\data\27_31\outputs\rescore_projects_tract_AF.csv'
+        home_dir + r'\data\27_31\outputs\polygon_projects_blockgroup_AF.csv',
+        home_dir + r'\data\27_31\outputs\polygon_projects_tract_AF.csv'
     ],
-    gdb=gdb,
-    network_step=True,
-    census_step=True
+    gdb=gdb
 )
 
 duration(start_time)
