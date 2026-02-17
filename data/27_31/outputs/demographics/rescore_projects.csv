@@ -1,0 +1,12 @@
+PROJIS,minority_universe,minority_pop,minority_pct,older_adults_universe,older_adults_pop,older_adults_pct,youth_universe,youth_pop,youth_pct,lowincome_universe,lowincome_pop,lowincome_pct,lep_universe,lep_pop,lep_pct,disabled_universe,disabled_pop,disabled_pct,Project Name,Shape,Buffer
+605168,1902,150,7.9,1902,142,7.5,1902,535,28.1,1921,203,10.6,1788,46,2.6,1787,144,8.1,Hingham - Rt 3A,line,1/2-mile
+605857,1340,300,22.4,1340,205,15.3,1340,248,18.5,996,248,24.9,1018,30,2.9,1525,169,11.1,Norwood - Rt 1 and University Ave/Everett St,line,1/2-mile
+606226,21042,5929,28.2,21042,813,3.9,21042,2912,13.8,20339,2808,13.8,19199,1232,6.4,21290,1697,8,Somerville - Rutherford Ave,line,1/2-mile
+606453,35790,15417,43.1,35790,1056,3,35790,1263,3.5,21011,8566,40.8,31018,2748,8.9,31450,2691,8.6,Boston - Boylston St,line,1/2-mile
+609257,1350,897,66.4,1350,50,3.7,1350,262,19.4,1128,520,46.1,1091,349,32,2175,207,9.5,Everett - Beacham St,line,1/2-mile
+609531,5920,1620,27.4,5920,505,8.5,5920,1367,23.1,5285,464,8.8,5102,298,5.8,4684,395,8.4,Arlington - Stratton School,line,1/2-mile
+610662,4899,1452,29.6,4899,418,8.5,4899,823,16.8,4642,1084,23.4,4459,583,13.1,4348,545,12.5,Woburn - Woburn Common,line,1/2-mile
+611982,4642,2185,47.1,4642,222,4.8,4642,607,13.1,5199,1083,20.8,4995,785,15.7,5226,487,9.3,Medford - Wellington Underpass,line,1/2-mile
+613163,2022,235,11.6,2022,234,11.6,2022,436,21.6,2201,164,7.5,2002,34,1.7,2026,163,8,Lynnfield - Peabody Rail Trail,line,1/2-mile
+S13146,2278,1071,47,2278,164,7.2,2278,625,27.4,2459,132,5.4,2335,234,10,2097,122,5.8,Lexington - I95 and Rt 4/225 Interchange,line,1/2-mile
+S13147,6111,4484,73.4,6111,172,2.8,6111,1434,23.5,6047,2544,42.1,5867,2461,41.9,5657,550,9.7,Framingham - Intersection improvements at Rt 126/135/MBTA & CSX,line,1/2-mile

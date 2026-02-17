@@ -24,18 +24,18 @@ line_half_mi_tract <-     read_csv(paste0(home_dir, "\\lines_half_mi_tract_AF.cs
 polygon_tract <-          read_csv(paste0(home_dir, "\\polygon_projects_tract_AF.csv"), show_col_types = FALSE)
 
 bg_af <- rbind(
-  point_half_mi_bg,
-  point_quarter_mi_bg,
-  line_half_mi_bg,
-  polygon_bg %>% rename(PROJIS = projis)
+  point_half_mi_bg %>% mutate(geometry = "point"),
+  point_quarter_mi_bg %>% mutate(geometry = "point"),
+  line_half_mi_bg %>% mutate(geometry = "line"),
+  polygon_bg %>% rename(PROJIS = projis) %>% mutate(geometry = "polygon")
 ) %>% 
   filter(!is.na(GEOID))
 
 tract_af <- rbind(
-  point_half_mi_tract,
-  point_quarter_mi_tract,
-  line_half_mi_tract,
-  polygon_tract %>% rename(PROJIS = projis)
+  point_half_mi_tract %>% mutate(geometry = "point"),
+  point_quarter_mi_tract %>% mutate(geometry = "point"),
+  line_half_mi_tract %>% mutate(geometry = "line"),
+  polygon_tract %>% rename(PROJIS = projis) %>% mutate(geometry = "polygon")
 ) %>% 
   filter(!is.na(GEOID))
 
@@ -84,6 +84,7 @@ test <- bg_af %>%
 test2 <- point_half_mi_bg %>% 
   left_join(polygon_half_mi_bg, by=join_by(PROJIS))
 
+# There are some projects represented in multiple datasets - check which is present in each geometry type
 projis_table <- data.frame(
   projis <- unique(bg_af$PROJIS)
 ) %>% 
