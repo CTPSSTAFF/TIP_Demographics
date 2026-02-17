@@ -1,0 +1,23 @@
+PROJIS,minority_universe,minority_pop,minority_pct,older_adults_universe,older_adults_pop,older_adults_pct,youth_universe,youth_pop,youth_pct,lowincome_universe,lowincome_pop,lowincome_pct,lep_universe,lep_pop,lep_pct,disabled_universe,disabled_pop,disabled_pct,Project Name,Shape,Buffer
+613145,9425,1390,14.7,9425,749,7.9,9425,1668,17.7,9132,1171,12.8,8554,363,4.2,7891,927,11.7,Wakefield Downtown,line,1/2-mile
+613244,17970,10627,59.1,17970,935,5.2,17970,3570,19.9,17452,5392,30.9,16177,4289,26.5,17886,2172,12.1,Malden – Broadway Reconstruction Everett to Melrose City Line,Line,1/2-mile
+613683,8840,3443,38.9,8840,501,5.7,8840,1827,20.7,8407,1677,19.9,8111,651,8,8458,677,8,"Pedestrian Bridge Replacement, B-27-017, Davis Path over MBTA",line,1/2-mile
+S13385,71322,43152,60.5,71322,3936,5.5,71322,12188,17.1,70400,20336,28.9,66462,17567,26.4,68910,7230,10.5,Malden Bicycle Rack Expansion,should be points,1/4-mile
+S13386,73478,25262,34.4,73478,5345,7.3,73478,13579,18.5,71592,11013,15.4,69414,4964,7.2,70548,5394,7.6,Brookline Bluebike Expansion,should be points,1/4-mile
+S13387,15986,5912,37,15986,1052,6.6,15986,2424,15.2,14277,2522,17.7,14937,1150,7.7,14807,1161,7.8,Brookline Bicycle Rack Expansion,should be points,1/4-mile
+S13388,67038,6661,9.9,67038,6539,9.8,67038,11889,17.7,66636,11238,16.9,63947,2128,3.3,66926,6240,9.3,CATA Access for All,polygon,n/a
+S13392,343355,108800,31.7,343355,24625,7.2,343355,76776,22.4,332021,48043,14.5,321675,37317,11.6,339009,29944,8.8,Procurement of Hydrogen Fuel Cell-Powered Transit Vehicles,polygon,n/a
+S13393,25750,11729,45.5,25750,1301,5.1,25750,1506,5.8,16873,7459,44.2,21981,2908,13.2,21566,2447,11.3,Symphony Station,should be point,1/2-mile
+S13394,13989,5742,41,13989,765,5.5,13989,975,7,9227,2835,30.7,11338,1770,15.6,11772,1357,11.5,Downtown Crossing Vertical Transportation Improvements Phase 2,should be point,1/2-mile
+S13395,95033,18341,19.3,95033,9089,9.6,95033,21712,22.8,92766,8935,9.6,89805,2848,3.2,94047,8397,8.9,Operational Enhancement of Bus Routes 714 and 716,should be line,1/4-mile
+S13396,3297670,1207271,36.6,3297670,230521,7,3297670,622082,18.9,3161690,603682,19.1,3105676,352766,11.4,3246152,335787,10.3,Bus Priority and Accessibility Improvements,polygon,n/a
+S13397,71280,11331,15.9,71280,4578,6.4,71280,15895,22.3,67994,6372,9.4,67518,2093,3.1,68983,6136,8.9,Franklin Line Double Track Improvements - Phase 3,should be line,1/2-mile
+S13399,48871,6484,13.3,48871,3894,8,48871,10833,22.2,48158,4124,8.6,45810,1166,2.5,48311,4585,9.5,Haverhill Line Double Track Improvements,should be line,1/2-mile
+S13402,95213,24291,25.5,95213,7555,7.9,95213,21967,23.1,89337,7137,8,89898,5904,6.6,94689,8288,8.8,High Priority Stations Accessibility Improvements Program,should be points,1/2-mile
+S13404,6087,1422,23.4,6087,202,3.3,6087,384,6.3,6649,548,8.2,6498,151,2.3,6796,142,2.1,Silver Line Tunnel Flood Mitigation,line,1/2-mile
+S13405,25360,16304,64.3,25360,812,3.2,25360,4775,18.8,26074,8189,31.4,24766,9554,38.6,25046,2381,9.5,Blue Line Tunnel Airport Flood Mitigation,line,1/2-mile
+S13406,11219,7331,65.3,11219,489,4.4,11219,2578,23,11000,4531,41.2,10291,4678,45.5,10608,1303,12.3,Walking to Wonderland (Design Only),line,1/2-mile
+S13407,5165,542,10.5,5165,496,9.6,5165,1068,20.7,4711,503,10.7,4674,67,1.4,4700,284,6,Marblehead Reconstruction of Pleasant Street,line,1/2-mile
+S13410,11247,5429,48.3,11247,765,6.8,11247,1695,15.1,10857,2483,22.9,10444,2173,20.8,11141,1319,11.8,Quincy Bluebikes Expansion,point,1/4-mile
+S13411,6373,2093,32.8,6373,403,6.3,6373,908,14.2,6519,1203,18.5,6237,667,10.7,6308,578,9.2,Joint Municipality Bluebikes Expansion,point,1/4-mile
+S13412,9018,1414,15.7,9018,839,9.3,9018,1495,16.6,8691,2402,27.6,8239,489,5.9,8680,1059,12.2,CATA magnolia Shuttle,line,1/2-mile

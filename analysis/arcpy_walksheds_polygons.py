@@ -17,11 +17,6 @@ def polygon_analysis(input_polygons, project_id_field, network_segments,
     demo_geom_layer = 'demo_geom_layer'
     network_segs_layer = 'network_segs_layer'
     network_segs_buffer_iden_layer = 'network_segs_buffer_iden_layer'
-    network_segs_buffer_fc = gdb + r'\network_segs_buffer'
-    network_segs_buffer_iden_fc = gdb + r'\network_segs_buffer_iden'
-    network_segs_buffer_inter_proj_fc = gdb + r'\network_segs_buffer_inter_proj'
-    network_segs_buffer_inter_diss = gdb + r'\network_segs_buffer_inter_diss'
-    network_segs_buffer_joined_table = gdb + r'\network_segs_buffer_joined_table'
 
     project_id_field_blank = False
     if project_id_field == '':
@@ -46,6 +41,11 @@ def polygon_analysis(input_polygons, project_id_field, network_segments,
         geom = dataset
         geoid_field = demo_geometry_feat[geom][0]
         geom_str = demo_geometry_feat[geom][1]
+        network_segs_buffer_fc = gdb + r'\network_segs_buffer_' + geom_str
+        network_segs_buffer_iden_fc = gdb + r'\network_segs_buffer_iden_' + geom_str
+        network_segs_buffer_inter_proj_fc = gdb + r'\network_segs_buffer_inter_proj_' + geom_str
+        network_segs_buffer_inter_diss = gdb + r'\network_segs_buffer_inter_diss_' + geom_str
+        network_segs_buffer_joined_table = gdb + r'\network_segs_buffer_joined_table_' + geom_str
 
         # 1. Select demographics polygons that intersect the input polygon features
         arcpy.AddMessage("1. Selecting demographics polygons...")
@@ -159,7 +159,7 @@ def polygon_analysis(input_polygons, project_id_field, network_segments,
         project_id.outputField = project_id_name
 
         geoid_name = geoid.outputField
-        geoid_name.name = 'geoid'
+        geoid_name.name = geoid_field
         geoid.outputField = geoid_name
 
         area_fraction_name = area_fraction.outputField

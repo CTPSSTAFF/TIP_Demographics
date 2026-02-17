@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <pubdate>20200113</pubdate>
+                <title>MBTA Extended Service Area</title>
+                <geoform>vector digital data</geoform>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>This file contains the 178 cities and towns in Massachusetts for which MBTA bus, rapid transit, or commuter rail service is provided. This data is based off of the 2010 census. The legislative intent for some boundaries could not be mapped. Boundaries where that is true are identified in the attribute information.&amp;nbsp;NameDescriptionData TypeExampletownFull name for the MA town or city identification.StringBostontown_idMassGIS Town-ID Code (alphabetical, 1-351)Numeric34sum_acresArea covered by the town or city in acres.Double31304.22sum_squareArea covered by the town or city in square miles.Double48.91&amp;nbsp;MassDOT/MBTA shall not be held liable for any errors in this data. This includes errors of omission, commission, errors concerning the content of the data, and relative and positional accuracy of the data. This data cannot be construed to be a legal document. Primary sources from which this data was compiled must be consulted for verification of information contained in this data.&amp;nbsp;</abstract>
+            <purpose>This file contains the 178 cities and towns in Massachusetts for which MBTA bus, rapid transit, or commuter rail service is provided. This data is based off of the 2010 census. The legislative intent for some boundaries could not be mapped. Boundaries where that is true are identified in the attribute information.</purpose>
+        </descript>
+        <timeperd>
+            <timeinfo>
+                <rngdates>
+                    <begdate>1880</begdate>
+                    <enddate>unknown</enddate>
+                </rngdates>
+            </timeinfo>
+            <current>publication date</current>
+        </timeperd>
+        <status>
+            <progress>In work</progress>
+            <update>As needed</update>
+        </status>
+        <spdom>
+            <bounding>
+                <westbc>-73.533318</westbc>
+                <eastbc>-69.89859</eastbc>
+                <northbc>42.888312</northbc>
+                <southbc>41.23117</southbc>
+            </bounding>
+        </spdom>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>City Boundaries</themekey>
+                <themekey>Town Boundaries</themekey>
+                <themekey>Survey Points</themekey>
+                <themekey>Harbor and Lands Commission</themekey>
+                <themekey>Municipal</themekey>
+            </theme>
+            <theme>
+                <themekt>ISO 19115 Topic Categories</themekt>
+                <themekey>boundaries</themekey>
+            </theme>
+            <place>
+                <placekt>None</placekt>
+                <placekey>Commonwealth of Massachusetts</placekey>
+                <placekey>Massachusetts</placekey>
+            </place>
+        </keywords>
+        <accconst>Other Constraints</accconst>
+        <useconst>CC0</useconst>
+        <ptcontac>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>MassGIS</cntorg>
+                    <cntper>Michael Trust</cntper>
+                </cntorgp>
+                <cntpos>Sr. GIS Database Administrator</cntpos>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>One Ashburton Place, Room 819</address>
+                    <city>Boston</city>
+                    <state>MA</state>
+                    <postal>02108</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>617-619-5615</cntvoice>
+                <cntemail>michael.trust@state.ma.us</cntemail>
+                <hours>9AM-5PM</hours>
+            </cntinfo>
+        </ptcontac>
+        <datacred>Massachusetts Bay Transportation Authority</datacred>
+        <native>Esri ArcGIS 12.4.2.19948</native>
+    </idinfo>
+    <dataqual>
+        <attracc>
+            <attraccr>There have been no deliberate or intentional omissions or inclusions of polygon attributes within this data set.</attraccr>
+        </attracc>
+        <posacc>
+            <horizpa>
+                <horizpar>Curt Crowe (the National Geodetic Survey's liason to Massachusetts) has stated that "these are not survey quality coordinates. The atlas coordinates were only published to the nearest foot on an early datum and the survey work was done over a thirty year span. The 'Lefti" conversion updated the coordinates but it did not improve their accuracy. I would expect these values to be good to within 3 feet (1 meter) in most cases. Some areas will be slightly better and some could be much worse. "</horizpar>
+            </horizpa>
+        </posacc>
+        <lineage>
+            <procstep>
+                <procdesc>Boundary point locations were determined under The Massachusetts Town Corner Project; Updating the Harbor and Land Commission Town Boundary Atlases to the National Spatial Reference System. The Harbor and Land Commission Town Boundary Atlases contain valuable coordinate data on almost every town bound in Massachusetts. The survey fieldwork (conventional optical triangulation) was done between 1878 and 1912. The geographic coordinates of over 3500 corners and 800 control points were computed and published in a series of 68 atlases between 1880 and 1915. These coordinates were published to the hundredth of a second of arc (+ 1 foot) on the U.S. Standard Datum, a predecessor of the North American Datum and the North American Datum of 1927. In 1999 MassHighway and MassGIS joined forces in an effort to create a digital database of the Town Boundary monuments and to update the coordinate values to the geodetic datums in current use; the North American Datum of 1927 (NAD27) and the North American Datum of 1983 (NAD83). The following method was used: -Automate coordinate data for the 3500 corners and 800 control points -Review, compute, and integrate over 150 pieces of Legislation which alter town lines -Identify control points which are in the NGS Data Base -300 common stations found, these points have US Standard Datum, NAD27 and NAD83 coordinate values -Develop a grid of datum shifts from the 300 common points to be applied to the town corner points -Used the National Geodetic Survey?s LEFTI software -Update the data set to NAD27 geographic coordinates with LEFTI software -Compute NAD27 State Plane Coordinates with GPPCGP software -Update the data set to NAD83 geographic coordinates with NADCON software -Compute NAD83 State Plane Coordinates with SPCS83 software -Graphically review the updated coordinate values The updated coordinates for the boundary points cannot be more accurate than the initial coordinates without additional survey. Given the combination of original survey methods, 100 years of exposure to natural forces and the least squares transformation process, the updated coordinates of the town line bounds should be considered to be accurate in the 1-meter (3 foot) range. Once the updated coordinates had been calculated and entered into an Access database it was passed on to MassGIS. MassGIS then queried out the useful boundary coordinates and created a point shapefile from this information (named TOWNSSURVEY_POINT). The coastline was developed through coordination with Massachusetts Water Resources Authority. The source for the coastline was the 1:12000 scale wetlands data layer, with the coastline boundary being the upland-side boundaries of tidal flats and rocky inter-tidal zones. These upland boundaries were photo-interprested from 1:12000 scale color IR photography. The arc layer was created by adjusting the existing 1:25,000 scale town boundaries to the the survey point data (TOWNSSURVEY_POINT). All GIS work for the arc creation was done using the ARCGIS 8.x suite of products. In many areas, the boundary creation was simply a matter of "connecting the dots" from one boundary point to the next. Where boundaries follow a stream/river or road right of way the boundary was approximately delineated using the 2001 Half Meter Color Orthophotography as a base. All boundaries that follow a water body or a ROW are coded in the attribute table in the BND_QUAL field. A complex boundary situation occurs when a survey point is a "witness mark", denoted by the letters WM in the coordinate name. A witness mark point is an "on-land" representation of the next point along the boundary when that next point is in a river, wetland, or pond. A line drawn between the point before a witness mark and a witness mark point gives you the direction of the town boundary as it proceeds to the next point in the river, wetland, or pond. Witness marks are often but not always on the town boundary. The Harbor and Land Commission Town Boundary Atlases included large scale maps of individual boundary point locations. Digital images of these maps taken by MassGIS were also used as a guide in creating the town boundaries layer. Once the boundary arcs had been updated the updated coastline derived from the wetlands data was appending to the new boundary arcs. The layer was updated on May 24, 2006, when TOWNSSURVEY_PT points ID1 = 1629 (Needham-Wellesley) and 1933 (Winchendon-NH border) were slightly moved to correct coordinate data entry errors. Files were replaced on October 12, 2006, with BND_QUAL values changed along Brookline-Boston border. Files were replaced on December 4, 2007, with five adjusted boundaries based on surveyed right-of-way plans. In September 2009 TYPE was changed to 'TC' for Braintree, Palmer, Randolph and Winthrop. In May 2011 the Boston/Brookline boundary was modified (topological edit based on ARC feature class line moved from point ID1 1071 to 798), affecting the two polygon and one arc layers. In June 2011 some pseudo nodes were removed along the Haverhill boundary, affecting the two polygon and one arc layers. In October 2011 edits were made along the boundaries of: Palmer-Monson (based on parcels); West Springfield-Agawam (Acts and Resolves redefinition); Charlemont-Hawley, Douglas-Uxbridge and Grafton-Westborough (legislative changes).</procdesc>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Jennifer Inzana</cntper>
+                        </cntorgp>
+                        <cntpos>GIS Database Specialist</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>251 Causeway Street, Suite 500</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02114</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-626-1196</cntvoice>
+                        <cntfax>617-626-1249</cntfax>
+                        <cntemail>jennifer.inzana@state.ma.us</cntemail>
+                        <hours>0800 - 1630 EST</hours>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Boundaries were modified in November and December, 2007, in five locations in Norfolk County, adjusted to match surveyed right-of-way (ROW) plans provided by the Norfolk County Engineering department. Edits included: - Bay Road (Sharon-Stoughton); - Clapboardtree Street (Norwood-Westwood); - Old Post Road (Walpole-Sharon); - Canton Street (Norwood-Westwood and Canton-N-W); - County Street (Dover-Walpole between Medfield and Westwood)</procdesc>
+                <procdate>20071212</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS DBA</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>251 Causeway St., Suite 500</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02114</postal>
+                        </cntaddr>
+                        <cntvoice>617-626-1195</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>The TYPE field was changed from 'T' to 'TC' for BRAINTREE, PALMER, WINTHROP and RANDOLPH in September 2009.</procdesc>
+                <procdate>20090916</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS DBA</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>251 Causeway St., Suite 500</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02114</postal>
+                        </cntaddr>
+                        <cntvoice>617-626-1195</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Boston/Brookline boundary modified on May 9, 2011. Topological edit based on ARC feature class line moved from point ID1 1071 to 798.</procdesc>
+                <procdate>20110509</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Pseudo nodes removed along Haverill boundary.</procdesc>
+                <procdate>20110608</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                        <cntemail>michael.trust@state.ma.us</cntemail>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Coastal polygons added to offshore areas of Boston and Medford.</procdesc>
+                <procdate>20121105</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Blackstone-Millville boundary edited based on Level 3 Assessors Parcels data.</procdesc>
+                <procdate>20130624</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Edits made to the boundaries of Boxford-Topsfield and Berlin-Hudson. Edits made as part of correcting miscoded coordinates of points in the TOWNSSURVEY_PT layer.</procdesc>
+                <procdate>20131213</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Edits made to the boundaries of Eastham-Orleans and Groton-Shirley based on data from L3 Assessor Parcels.</procdesc>
+                <procdate>20131213</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Tinker's Island reassigned to Salem from Marblehead. Bumkin Island reassigned from Hingham to Hull. Edits based on data from Level 3 Assessors Parcels.</procdesc>
+                <procdate>20140204</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Recoded TYPE = 'TC' for BRIDGEWATER, based on latest data from the Secretary of State's office.</procdesc>
+                <procdate>20140206</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 1601</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+            <procstep>
+                <procdesc>Duxbury-Pembroke border along Pine Brook updated based on scanned survey plan approved by the Duxbury planning board in 1953.</procdesc>
+                <procdate>20150313</procdate>
+            </procstep>
+            <procstep>
+                <procdesc>The boundary at the Boxford-Topsfield point B-T2 was adjusted again, using coordinates for that point supplied by MassDOT Survey section; a section of the Cambridge-Somerville boundary near Route 28 was modified based on data from Cambridge.</procdesc>
+                <procdate>20151109</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>MassGIS</cntorg>
+                            <cntper>Michael Trust</cntper>
+                        </cntorgp>
+                        <cntpos>Sr. GIS Database Administrator</cntpos>
+                        <cntaddr>
+                            <addrtype>mailing and physical</addrtype>
+                            <address>One Ashburton Place, Room 819</address>
+                            <city>Boston</city>
+                            <state>MA</state>
+                            <postal>02108</postal>
+                            <country>US</country>
+                        </cntaddr>
+                        <cntvoice>617-619-5615</cntvoice>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+        </lineage>
+    </dataqual>
+    <spdoinfo>
+        <direct>Vector</direct>
+        <ptvctinf>
+            <sdtsterm>
+                <sdtstype>GT-polygon composed of chains</sdtstype>
+                <ptvctcnt>0</ptvctcnt>
+            </sdtsterm>
+        </ptvctinf>
+    </spdoinfo>
+    <eainfo>
+        <detailed>
+            <enttyp>
+                <enttypl>MBTA_Extended_Service_Area</enttypl>
+                <enttypd>Attribute table defining characteristics of towns within the Commonwealth of Massachusetts</enttypd>
+            </enttyp>
+            <attr>
+                <attrlabl>TOWN</attrlabl>
+                <attrdef>Full name for the MA town or city identification.</attrdef>
+            </attr>
+            <attr>
+                <attrlabl>TOWN_ID</attrlabl>
+                <attrdef>MassGIS Town-ID Code (alphabetical, 1-351)</attrdef>
+            </attr>
+            <attr>
+                <attrlabl>SUM_ACRES</attrlabl>
+                <attrdef>Area covered by the town or city in acres.</attrdef>
+            </attr>
+            <attr>
+                <attrlabl>SUM_SQUARE</attrlabl>
+                <attrdef>Area covered by the town or city in square miles.</attrdef>
+            </attr>
+        </detailed>
+    </eainfo>
+    <distinfo>
+        <distrib>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>MassGIS</cntorg>
+                </cntorgp>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>One Ashburton Place, Room 819</address>
+                    <city>Boston</city>
+                    <state>MA</state>
+                    <postal>02108</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>617-619-5611</cntvoice>
+            </cntinfo>
+        </distrib>
+        <distliab>None</distliab>
+        <stdorder>
+            <digform>
+                <digtinfo>
+                    <formname>Shapefiles and Personal Geodatabase</formname>
+                    <formvern>ArcGIS 10</formvern>
+                </digtinfo>
+            </digform>
+            <ordering>Download from http://www.mass.gov/itd/townsurvey</ordering>
+        </stdorder>
+        <availabl>
+            <timeinfo>
+                <sngdate>
+                    <caldate>20140206</caldate>
+                </sngdate>
+            </timeinfo>
+        </availabl>
+    </distinfo>
+    <metainfo>
+        <metd>20150313</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>MassGIS</cntorg>
+                    <cntper>Michael Trust</cntper>
+                </cntorgp>
+                <cntpos>Sr. GIS Database Administrator</cntpos>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>One Ashburton Place, Room 819</address>
+                    <city>Boston</city>
+                    <state>MA</state>
+                    <postal>02108</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>617-619-5615</cntvoice>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>

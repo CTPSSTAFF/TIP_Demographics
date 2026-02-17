@@ -78,7 +78,7 @@ def main(input_points, project_id_field, solver_object, network_dataset,
     :param project_id_field: Field containing ID (str) for groups of locations (i.e. a TIP project)
     :param network_dataset: An ESRI dataset containing a network dataset and segments feature class
     :param demo_geometry_feat: Dictionary with structure: {[path to census features (tracts or block groups)]: list["geoid field name", "census geom (tract or bg)"]}
-    :param output_table: Path of output table to create
+    :param output_tables: List of output tables corresponding to demographic geometries above
     :param gdb: Geodatabase where intermediate values will be saved
     :param cutoffs: Floating point number representing distance in miles
     :param network_step: Boolean indicating whether to run network buffer step

@@ -1,26 +1,30 @@
-﻿ID,Project Name,Shape,Buffer,
-613244,Malden – Broadway Reconstruction Everett to Melrose City Line,Line,1/2-mile,
-S13388,CATA Access for All,polygon,n/a,
-S13389,Cape Ann Dialysis Transportation,polygon,n/a,
-S13390,Procurement of 10 Compressed Natural Gas (CNG) Vehicles,polygon,n/a,
-S13391,Construction of Vehicle Maintenance and Fueling Facility,polygon,n/a,
-S13392,Procurement of Hydrogen Fuel Cell-Powered Transit Vehicles,polygon,n/a,
-S13393,Symphony Station,should be point,1/2-mile,
-S13394,Downtown Crossing Vertical Transportation Improvements Phase 2,should be point,1/2-mile,
-S13395,Operational Enhancement of Bus Routes 714 and 716,should be line,1/4-mile,
-S13396,Bus Priority and Accessibility Improvements,polygon,n/a,
-S13397,Franklin Line Double Track Improvements - Phase 3,should be line,1/2-mile,
-S13398,Unit Substation Upgrade/Replacement,polygon,n/a,
-S13399,Haverhill Line Double Track Improvements,should be line,1/2-mile,
-S13400,Locomotive Procurement,polygon,n/a,
-S13401,Better Bus Project - Operational Safety Improvements at Bus Stops,polygon,n/a,
-S13402,High Priority Stations Accessibility Improvements Program,should be points,1/2-mile,
-S13403,Power Systems Reliability Program,polygon,n/a,
-S13404,Silver Line Tunnel Flood Mitigation,line,1/2-mile,
-S13405,Blue Line Tunnel Airport Flood Mitigation,line,1/2-mile,
-S13385,Malden Bicycle Rack Expansion,should be points,1/4-mile,
-S13386,Brookline Bluebike Expansion,should be points,1/4-mile,
-S13387,Brookline Bicycle Rack Expansion,should be points,1/4-mile,
-S13407,Marblehead Reconstruction of Pleasant Street,line,1/2-mile,
-S13406,Walking to Wonderland (Design Only),line,1/2-mile,
-613683,"Pedestrian Bridge Replacement, B-27-017, Davis Path over MBTA",line,1/2-mile,
+﻿ID,Project Name,Shape,Buffer
+613244,Malden – Broadway Reconstruction Everett to Melrose City Line,Line,1/2-mile
+S13388,CATA Access for All,polygon,n/a
+S13389,Cape Ann Dialysis Transportation,polygon,n/a
+S13390,Procurement of 10 Compressed Natural Gas (CNG) Vehicles,polygon,n/a
+S13391,Construction of Vehicle Maintenance and Fueling Facility,polygon,n/a
+S13392,Procurement of Hydrogen Fuel Cell-Powered Transit Vehicles,polygon,n/a
+S13393,Symphony Station,should be point,1/2-mile
+S13394,Downtown Crossing Vertical Transportation Improvements Phase 2,should be point,1/2-mile
+S13395,Operational Enhancement of Bus Routes 714 and 716,should be line,1/4-mile
+S13396,Bus Priority and Accessibility Improvements,polygon,n/a
+S13397,Franklin Line Double Track Improvements - Phase 3,should be line,1/2-mile
+S13398,Unit Substation Upgrade/Replacement,polygon,n/a
+S13399,Haverhill Line Double Track Improvements,should be line,1/2-mile
+S13400,Locomotive Procurement,polygon,n/a
+S13401,Better Bus Project - Operational Safety Improvements at Bus Stops,polygon,n/a
+S13402,High Priority Stations Accessibility Improvements Program,should be points,1/2-mile
+S13403,Power Systems Reliability Program,polygon,n/a
+S13404,Silver Line Tunnel Flood Mitigation,line,1/2-mile
+S13405,Blue Line Tunnel Airport Flood Mitigation,line,1/2-mile
+S13385,Malden Bicycle Rack Expansion,should be points,1/4-mile
+S13386,Brookline Bluebike Expansion,should be points,1/4-mile
+S13387,Brookline Bicycle Rack Expansion,should be points,1/4-mile
+S13407,Marblehead Reconstruction of Pleasant Street,line,1/2-mile
+S13406,Walking to Wonderland (Design Only),line,1/2-mile
+613683,"Pedestrian Bridge Replacement, B-27-017, Davis Path over MBTA",line,1/2-mile
+S13411,Joint Municipality Bluebikes Expansion,point,1/4-mile
+S13410,Quincy Bluebikes Expansion,point,1/4-mile
+S13412,CATA magnolia Shuttle,line,1/2-mile
+613145,Wakefield Downtown,line,1/2-mile
