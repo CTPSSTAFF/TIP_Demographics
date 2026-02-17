@@ -14,27 +14,24 @@ arcpy.env.overwriteOutput = True
 
 
 home_dir = os.getenv('USERPROFILE') + r'\Documents\GitHub\TIP_Demographics\data\27_31'
-point_projects = home_dir + r'\gdbs\points.gdb\point_projects'
-gdb = home_dir + r'\gdbs\points.gdb'
+point_projects = home_dir + r'\gdbs\lines.gdb\line_projects_021126'
+gdb = home_dir + r'\gdbs\lines.gdb'
 
 # Join projects to their buffer distances
 buffers = arcpy.MakeTableView_management(home_dir + r'\inputs\Project_buffers.csv', 'buffers')
 
-# Split multipoints to single points
-point_projects_single = arcpy.MultipartToSinglepart_management(point_projects, gdb + r'\points_singlepart')
+# Split multipart to single part
+point_projects_single = arcpy.MultipartToSinglepart_management(point_projects, gdb + r'\lines_singlepart')
 proj_layer = arcpy.MakeFeatureLayer_management(point_projects_single)
 arcpy.AddJoin_management(proj_layer, "PROJIS", buffers, "ID")
 
 # Check that join worked
-print_rows(proj_layer)
+# print_rows(proj_layer)
 
 # Create subsets for each buffer distance
 print([f.name for f in arcpy.ListFields(proj_layer)])
-half_mi_points = arcpy.MakeFeatureLayer_management(proj_layer, 'half_mi_points', where_clause="""Project_buffers.csv.Buffer = '1/2-mile'""")
-print_rows(half_mi_points)
-
-quarter_mi_points = arcpy.MakeFeatureLayer_management(proj_layer, 'quarter_mi_points', where_clause="""Project_buffers.csv.Buffer = '1/4-mile'""")
-print_rows(quarter_mi_points)
+half_mi_lines = arcpy.MakeFeatureLayer_management(proj_layer, 'half_mi_lines', where_clause="""Project_buffers.csv.Buffer = '1/2-mile'""")
+print_rows(half_mi_lines)
 
 
 start_time = time.time()
@@ -48,7 +45,7 @@ start_time = time.time()
 
 # half mile
 ScriptTool(
-    input_features=half_mi_points,
+    input_features=half_mi_lines,
     project_id_field='PROJIS',
     network_dataset=os.getenv('USERPROFILE') + r'\Documents\ArcGIS\Projects\TIP_Demographics\RI_ND_copy.gdb\CTPS_RoadInv2018On_DS',
     demo_geometry_feat={
@@ -57,29 +54,10 @@ ScriptTool(
     },
     cutoffs=0.5,
     output_tables=[
-        home_dir + r'\outputs\point_half_mi_blockgroup_AF.csv',
-        home_dir + r'\outputs\point_half_mi_tract_AF.csv'
+        home_dir + r'\outputs\lines_half_mi_blockgroup_AF.csv',
+        home_dir + r'\outputs\lines_half_mi_tract_AF.csv'
     ],
-    gdb=new_gdb(home_dir + r'\gdbs', 'points_half_mi.gdb'),
-    network_step=True,
-    census_step=True
-)
-
-# quarter mile
-ScriptTool(
-    input_features=quarter_mi_points,
-    project_id_field='PROJIS',
-    network_dataset=os.getenv('USERPROFILE') + r'\Documents\ArcGIS\Projects\TIP_Demographics\RI_ND_copy.gdb\CTPS_RoadInv2018On_DS',
-    demo_geometry_feat={
-        home_dir + r'\inputs\census\brmpo_blockgroup.shp': ['GEOID', 'bg'],
-        home_dir + r'\inputs\census\brmpo_tract.shp': ['GEOID', 'tract']
-    },
-    cutoffs=0.25,
-    output_tables=[
-        home_dir + r'\outputs\point_quarter_mi_blockgroup_AF.csv',
-        home_dir + r'\outputs\point_quarter_mi_tract_AF.csv'
-    ],
-    gdb=new_gdb(home_dir + r'\gdbs', 'points_quarter_mi.gdb'),
+    gdb=new_gdb(home_dir + r'\gdbs', 'lines_half_mi.gdb'),
     network_step=True,
     census_step=True
 )

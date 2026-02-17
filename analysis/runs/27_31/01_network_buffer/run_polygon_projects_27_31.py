@@ -1,5 +1,8 @@
-from sys import stdout
+# Generate area fractions for polygon projects. Since most (all?) of the projects use municipal boundaries as their
+# areas, we could probably just use muni level demographics and tabulate as necessary. But in theory some projects may
+# use an irregular boundary, so we will continue with this methodology.
 
+from sys import stdout
 import arcpy
 import os
 import sys
@@ -15,7 +18,7 @@ arcpy.env.overwriteOutput = True
 
 
 home_dir = os.getenv('USERPROFILE') + r'\Documents\GitHub\TIP_Demographics'
-polygon_projects = home_dir + r'\data\27_31\gdbs\polygons.gdb\polygon_projects'
+polygon_projects = home_dir + r'\data\27_31\gdbs\polygons.gdb\polygon_projects_cleaned'
 test_project = home_dir + r'\data\27_31\gdbs\polygons.gdb\test'
 gdb = new_gdb(home_dir + r'\data\27_31\gdbs', 'polygons.gdb')
 
@@ -25,10 +28,11 @@ start_time = time.time()
 # sys.stdout = open(home_dir + r'\logs\arcpy_network_buffer' + date_time_str + '.txt', 'w')
 # sys.stderr = open(home_dir + r'\logs\arcpy_network_buffer' + date_time_str + '_errors.txt', 'w')
 
+
 polygon_analysis(
-    # input_polygons=polygon_projects,
-    input_polygons=test_project,
-    project_id_field='PROJIS',
+    input_polygons=polygon_projects,
+    # input_polygons=test_project,
+    project_id_field='projis',
     network_segments=os.getenv('USERPROFILE') + r'\Documents\ArcGIS\Projects\TIP_Demographics\RI_ND_copy.gdb\CTPS_RoadInv2018On_DS\CTPS_RoadInv2018On_Segments',
     demo_geometry_feat={
         home_dir + r'\data\27_31\inputs\census\brmpo_blockgroup.shp': ['GEOID', 'bg'],
@@ -42,4 +46,4 @@ polygon_analysis(
 )
 
 duration(start_time)
-sys.stdout.close()
+# sys.stdout.close()
